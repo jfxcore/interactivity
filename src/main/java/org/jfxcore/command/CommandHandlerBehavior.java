@@ -57,7 +57,7 @@ import javafx.scene.Node;
  * }</pre>
  *
  * Note that the {@link Command} class defines overridable {@link Command#onAttached onAttached} and
- * {@link Command#onDetached onDetached} methods, which can also be used to implement behavior logic.
+ * {@link Command#onDetached onDetached} methods, which can also be used to implement custom behavior.
  * The difference between those methods and {@code CommandHandlerBehavior} is in scope:
  * logic in a {@code Command} subclass generally applies to all nodes that use the command,
  * while {@code CommandHandlerBehavior} only applies to specific nodes on which the handler is set.
@@ -74,8 +74,8 @@ public abstract class CommandHandlerBehavior<T extends Node> extends Behavior<T>
     /**
      * Occurs when the command is attached to a {@link Node}.
      * <p>
-     * When the command is attached to multiple triggers of a single {@code Node}, this method is only invoked once.
-     * Note that this method will be invoked once for each {@code Node} to which this command is attached.
+     * If the command is added to multiple {@link InvokeCommandAction} instances on a single {@code Node},
+     * this method is only invoked once.
      *
      * @param command the command
      */
@@ -84,11 +84,8 @@ public abstract class CommandHandlerBehavior<T extends Node> extends Behavior<T>
     /**
      * Occurs when the command is detached from a {@link Node}.
      * <p>
-     * This happens when the command is removed from its associated {@link Trigger}, or if the {@code Trigger}
-     * is removed from its associated {@code Node}.
-     * When the command is attached to multiple triggers of a single {@code Node}, the command is only detached
-     * from the node once it is removed from all triggers. Note that this method will be invoked once for each
-     * {@code Node} from which this command is detached.
+     * If the command was added to multiple {@link InvokeCommandAction} instances on a single {@code Node},
+     * this method is only invoked after it is removed from all {@code InvokeCommandAction} instances.
      *
      * @param command the command
      */

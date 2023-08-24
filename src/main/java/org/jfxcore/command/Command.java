@@ -21,7 +21,6 @@
 
 package org.jfxcore.command;
 
-import org.jfxcore.interaction.Trigger;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.scene.Node;
 
@@ -77,10 +76,11 @@ public abstract class Command {
     protected abstract void onExecute(Object parameter);
 
     /**
-     * Occurs when the command is attached to a {@link Node} by binding it to one of the {@code Node}'s events.
+     * Occurs when the command is attached to a {@link Node}.
      * <p>
-     * When the command is bound to multiple events of a single {@code Node}, this method is only invoked once.
-     * Note that this method will be invoked once for each {@code Node} to which this command is attached.
+     * If the command is added to multiple {@link InvokeCommandAction} instances on a single {@code Node},
+     * this method is only invoked once. Note that a command can be attached to multiple different nodes;
+     * this method will be invoked once for each {@code Node} to which this command is attached.
      * <p>
      * Derived classes can override this method to implement logic that the command uses to configure the
      * controls to which it is attached. For example, a command implementation could set a control's
@@ -97,12 +97,10 @@ public abstract class Command {
     /**
      * Occurs when the command is detached from a {@link Node}.
      * <p>
-     * This happens when the command is removed from its associated {@link InvokeCommandAction}, if the
-     * {@code InvokeCommandAction} is removed from its associated {@link Trigger}, or if the {@code Trigger}
-     * is removed from the {@link Node}.
-     * When the command is bound to multiple events of a single {@code Node}, the command is only detached
-     * after the last binding is removed. Note that this method will be invoked once for each {@code Node}
-     * from which this command is detached.
+     * If the command was added to multiple {@link InvokeCommandAction} instances on a single {@code Node},
+     * this method is only invoked after it is removed from all {@code InvokeCommandAction} instances.
+     * Note that a command can be attached to multiple different nodes; this method will be invoked once
+     * for each {@code Node} from which this command is detached.
      * <p>
      * Derived classes can override this method to roll back changes that were established
      * by the {@link #onAttached onAttached} method.
