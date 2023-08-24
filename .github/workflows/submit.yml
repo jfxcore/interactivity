@@ -1,0 +1,35 @@
+name: CI tests
+
+on:
+  push:
+    branches-ignore:
+      - master
+      - main
+      - 'WIP*'
+
+jobs:
+  validation:
+    name: "Gradle Wrapper Validation"
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: gradle/wrapper-validation-action@v1
+
+  # Run on Windows instead of Ubuntu, since TestFX fails with an error similar to
+  # https://github.com/TestFX/TestFX/issues/731 but the proposed solution doesn't work.
+  build:
+    name: Build and test
+    needs: validation
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v2
+        with:
+          distribution: 'zulu'
+          java-version: '17.0.1'
+
+      - name: Run Gradle build
+        run: ./gradlew build check
