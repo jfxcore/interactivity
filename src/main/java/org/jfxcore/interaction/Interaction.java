@@ -187,7 +187,7 @@ public final class Interaction {
 
         @Override
         String elementName() {
-            return "Behavior";
+            return Behavior.class.getSimpleName();
         }
 
         @Override
@@ -203,7 +203,7 @@ public final class Interaction {
 
         @Override
         String elementName() {
-            return "Trigger";
+            return Trigger.class.getSimpleName();
         }
 
         @Override

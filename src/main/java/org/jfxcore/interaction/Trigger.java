@@ -174,15 +174,18 @@ public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
 
         private void checkPreconditions(TriggerAction<?> action) {
             if (action == null) {
-                throw new NullPointerException("Action cannot be null.");
+                throw new NullPointerException(
+                    TriggerAction.class.getSimpleName() + " cannot be null.");
             }
 
             if (action.associatedTrigger == trigger) {
-                throw new IllegalStateException("Action cannot be added to the same trigger more than once.");
+                throw new IllegalStateException(
+                    TriggerAction.class.getSimpleName() + "  cannot be added to the same trigger more than once.");
             }
 
             if (action.associatedTrigger != null) {
-                throw new IllegalStateException("Action cannot be added to multiple triggers.");
+                throw new IllegalStateException(
+                    TriggerAction.class.getSimpleName() + " cannot be added to multiple triggers.");
             }
         }
     }
