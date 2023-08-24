@@ -28,6 +28,8 @@ import java.util.function.Consumer;
 
 /**
  * A command implementation that invokes a user-specified operation.
+ *
+ * @param <T> the parameter type, or {@code Void} if the command is not parameterized
  */
 public class RelayCommand<T> extends Command {
 

@@ -42,6 +42,8 @@ import javafx.scene.input.TouchEvent;
  * </ul>
  * If a value other than {@code null} is specified for any of these filter properties,
  * {@code TouchEventTrigger} will only handle events that match the specified value.
+ *
+ * @param <T> the node type
  */
 public class TouchEventTrigger<T extends Node> extends InputEventTrigger<T, TouchEvent> {
 

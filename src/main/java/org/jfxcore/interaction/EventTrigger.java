@@ -80,6 +80,7 @@ public abstract class EventTrigger<T extends Node, E extends Event> extends Trig
      * Derived classes should override this method to inspect the event and return {@code true}
      * if the event should be handled by this {@code EventTrigger}.
      *
+     * @param event the event
      * @return {@code true} if the event should be handled, {@code false} otherwise
      */
     protected boolean handleEvent(E event) {

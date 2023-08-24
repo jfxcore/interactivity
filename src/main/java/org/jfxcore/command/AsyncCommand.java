@@ -32,6 +32,11 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
 public abstract class AsyncCommand extends Command {
 
     /**
+     * Initializes a new {@code AsyncCommand} instance.
+     */
+    protected AsyncCommand() {}
+
+    /**
      * Gets a property that indicates whether the command is currently executing.
      *
      * @return the {@code executing} property

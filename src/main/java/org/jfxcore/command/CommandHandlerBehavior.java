@@ -61,8 +61,15 @@ import javafx.scene.Node;
  * The difference between those methods and {@code CommandHandlerBehavior} is in scope:
  * logic in a {@code Command} subclass generally applies to all nodes that use the command,
  * while {@code CommandHandlerBehavior} only applies to specific nodes on which the handler is set.
+ *
+ * @param <T> the node type
  */
 public abstract class CommandHandlerBehavior<T extends Node> extends Behavior<T> {
+
+    /**
+     * Initializes a new {@code CommandHandlerBehavior} instance.
+     */
+    protected CommandHandlerBehavior() {}
 
     /**
      * Occurs when the command is attached to a {@link Node}.

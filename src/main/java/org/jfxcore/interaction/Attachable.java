@@ -32,7 +32,7 @@ abstract sealed class Attachable<T extends Node> permits Behavior, Trigger {
 
     T associatedNode;
 
-    public final T getAssociatedNode() {
+    T getAssociatedNode() {
         return associatedNode;
     }
 

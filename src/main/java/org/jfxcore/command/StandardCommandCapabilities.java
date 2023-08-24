@@ -41,6 +41,8 @@ public sealed interface StandardCommandCapabilities
     non-sealed interface Message extends StandardCommandCapabilities {
         /**
          * Gets a property that represents the reported message of the command.
+         *
+         * @return the {@code message} property
          */
         ReadOnlyStringProperty messageProperty();
 
@@ -58,6 +60,8 @@ public sealed interface StandardCommandCapabilities
     non-sealed interface Title extends StandardCommandCapabilities {
         /**
          * Gets a property that represents the reported title of the command.
+         *
+         * @return the {@code title} property
          */
         ReadOnlyStringProperty titleProperty();
 

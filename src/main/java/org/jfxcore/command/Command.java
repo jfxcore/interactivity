@@ -35,6 +35,11 @@ import javafx.scene.Node;
 public abstract class Command {
 
     /**
+     * Initializes a new {@code Command} instance.
+     */
+    protected Command() {}
+
+    /**
      * Gets a property that indicates whether the command is currently executable.
      *
      * @return the {@code executable} property

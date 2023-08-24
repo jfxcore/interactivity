@@ -62,6 +62,16 @@ public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
     }
 
     /**
+     * Gets the associated node.
+     *
+     * @return the associated node, or {@code null} if this trigger is not associated with a node
+     */
+    @Override
+    public final T getAssociatedNode() {
+        return super.getAssociatedNode();
+    }
+
+    /**
      * Gets a modifiable list of {@link TriggerAction} instances defined for this trigger.
      *
      * @return an {@code ObservableList} of {@code TriggerAction} instances
@@ -177,6 +187,20 @@ public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
         }
     }
 
+    /**
+     * Occurs when the trigger is attached to a node.
+     *
+     * @param node the node
+     */
+    protected void onAttached(T node) {}
+
+    /**
+     * Occurs when the trigger is detached from a node.
+     *
+     * @param node the node
+     */
+    protected void onDetached(T node) {}
+
     @Override
     final void attach(T node) {
         onAttached(node);
@@ -204,19 +228,5 @@ public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
             }
         }
     }
-
-    /**
-     * Occurs when the trigger is attached to a node.
-     *
-     * @param node the node
-     */
-    protected void onAttached(T node) {}
-
-    /**
-     * Occurs when the trigger is detached from a node.
-     *
-     * @param node the node
-     */
-    protected void onDetached(T node) {}
 
 }

@@ -33,6 +33,11 @@ public abstract class TriggerAction<T extends Node> {
     Trigger<? extends T> associatedTrigger;
 
     /**
+     * Initializes a new {@code TriggerAction} instance.
+     */
+    protected TriggerAction() {}
+
+    /**
      * Gets the node that is associated with this {@code TriggerAction}.
      *
      * @return the node, or {@code null} if this action is not associated with a node

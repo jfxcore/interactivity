@@ -35,14 +35,19 @@ import javafx.scene.Node;
  */
 public abstract non-sealed class Behavior<T extends Node> extends Attachable<T> {
 
-    @Override
-    final void attach(T node) {
-        onAttached(node);
-    }
+    /**
+     * Initializes a new {@code Behavior} instance.
+     */
+    protected Behavior() {}
 
+    /**
+     * Gets the associated node.
+     *
+     * @return the associated node, or {@code null} if this behavior is not associated with a node
+     */
     @Override
-    final void detach(T node) {
-        onDetached(node);
+    public final T getAssociatedNode() {
+        return super.getAssociatedNode();
     }
 
     /**
@@ -58,5 +63,15 @@ public abstract non-sealed class Behavior<T extends Node> extends Attachable<T> 
      * @param node the node
      */
     protected void onDetached(T node) {}
+
+    @Override
+    final void attach(T node) {
+        onAttached(node);
+    }
+
+    @Override
+    final void detach(T node) {
+        onDetached(node);
+    }
 
 }

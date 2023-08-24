@@ -1,3 +1,6 @@
+/**
+ * Contains easy-to-use interactivity tools for JavaFX applications.
+ */
 module jfxcore.interactivity {
 
     requires javafx.base;
