@@ -80,7 +80,7 @@ public final class Interaction {
         return list;
     }
 
-    private static class AttachableList<T extends Node, U extends Attachable<? super T>>
+    private static abstract class AttachableList<T extends Node, U extends Attachable<? super T>>
             extends ModifiableObservableListBase<U> {
         final List<U> backingList;
         final T node;
@@ -163,17 +163,19 @@ public final class Interaction {
             return oldElement;
         }
 
-        private void checkPreconditions(U behavior) {
-            if (behavior == null) {
-                throw new NullPointerException("Behavior cannot be null.");
+        abstract String elementName();
+
+        private void checkPreconditions(U element) {
+            if (element == null) {
+                throw new NullPointerException(elementName() + " cannot be null.");
             }
 
-            if (behavior.associatedNode == node) {
-                throw new IllegalStateException("Behavior cannot be attached to the same node more than once.");
+            if (element.associatedNode == node) {
+                throw new IllegalStateException(elementName() + " cannot be attached to the same node more than once.");
             }
 
-            if (behavior.associatedNode != null) {
-                throw new IllegalStateException("Behavior cannot be attached to multiple nodes.");
+            if (element.associatedNode != null) {
+                throw new IllegalStateException(elementName() + " cannot be attached to multiple nodes.");
             }
         }
     }
@@ -181,6 +183,11 @@ public final class Interaction {
     private static class BehaviorList<T extends Node, U extends Behavior<? super T>> extends AttachableList<T, U> {
         BehaviorList(T node) {
             super(node);
+        }
+
+        @Override
+        String elementName() {
+            return "Behavior";
         }
 
         @Override
@@ -192,6 +199,11 @@ public final class Interaction {
     private static class TriggerList<T extends Node, U extends Trigger<? super T>> extends AttachableList<T, U> {
         TriggerList(T node) {
             super(node);
+        }
+
+        @Override
+        String elementName() {
+            return "Trigger";
         }
 
         @Override
