@@ -54,13 +54,13 @@ public class CommandTest {
         var trigger2 = new ActionEventTrigger<>(new InvokeCommandAction(command2));
         Interaction.getTriggers(pane).add(trigger1);
         Interaction.getTriggers(pane).add(trigger2);
-        assertEquals(2, CommandActionList.get(pane).size());
+        assertEquals(2, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of("+A", "+B"), trace);
         Interaction.getTriggers(pane).remove(trigger1);
-        assertEquals(1, CommandActionList.get(pane).size());
+        assertEquals(1, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of("+A", "+B", "-A"), trace);
         Interaction.getTriggers(pane).remove(trigger2);
-        assertEquals(0, CommandActionList.get(pane).size());
+        assertEquals(0, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of("+A", "+B", "-A", "-B"), trace);
     }
 
@@ -72,13 +72,13 @@ public class CommandTest {
         var commandAction = new InvokeCommandAction();
         var trigger = new KeyEventTrigger<>(KeyEvent.KEY_PRESSED, commandAction);
         Interaction.getTriggers(pane).add(trigger);
-        assertEquals(1, CommandActionList.get(pane).size());
+        assertEquals(1, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of(), trace);
         commandAction.setCommand(command);
-        assertEquals(1, CommandActionList.get(pane).size());
+        assertEquals(1, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of("+A"), trace);
         commandAction.setCommand(null);
-        assertEquals(1, CommandActionList.get(pane).size());
+        assertEquals(1, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of("+A", "-A"), trace);
     }
 
@@ -93,27 +93,27 @@ public class CommandTest {
         var trigger2 = new KeyEventTrigger<>(KeyEvent.KEY_RELEASED, commandAction2);
 
         Interaction.getTriggers(pane).addAll(trigger1, trigger2);
-        assertEquals(2, CommandActionList.get(pane).size());
+        assertEquals(2, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of("+A"), trace);
         commandAction1.setCommand(null);
-        assertEquals(2, CommandActionList.get(pane).size());
+        assertEquals(2, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of("+A"), trace);
         commandAction2.setCommand(null);
-        assertEquals(2, CommandActionList.get(pane).size());
+        assertEquals(2, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of("+A", "-A"), trace);
 
         commandAction1.setCommand(command);
-        assertEquals(2, CommandActionList.get(pane).size());
+        assertEquals(2, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of("+A", "-A", "+A"), trace);
         commandAction2.setCommand(command);
-        assertEquals(2, CommandActionList.get(pane).size());
+        assertEquals(2, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of("+A", "-A", "+A"), trace);
 
         Interaction.getTriggers(pane).remove(trigger1);
-        assertEquals(1, CommandActionList.get(pane).size());
+        assertEquals(1, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of("+A", "-A", "+A"), trace);
         Interaction.getTriggers(pane).remove(trigger2);
-        assertEquals(0, CommandActionList.get(pane).size());
+        assertEquals(0, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of("+A", "-A", "+A", "-A"), trace);
     }
 

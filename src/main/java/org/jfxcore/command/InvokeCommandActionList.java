@@ -28,11 +28,11 @@ import javafx.scene.Node;
 import java.util.ArrayList;
 import java.util.List;
 
-final class CommandActionList extends ModifiableObservableListBase<InvokeCommandAction> {
+final class InvokeCommandActionList extends ModifiableObservableListBase<InvokeCommandAction> {
 
-    public static CommandActionList get(Node node) {
-        return (CommandActionList)node.getProperties().computeIfAbsent(
-            CommandActionList.class, key -> new CommandActionList(node));
+    public static InvokeCommandActionList get(Node node) {
+        return (InvokeCommandActionList)node.getProperties().computeIfAbsent(
+            InvokeCommandActionList.class, key -> new InvokeCommandActionList(node));
     }
 
     private final Node node;
@@ -46,7 +46,7 @@ final class CommandActionList extends ModifiableObservableListBase<InvokeCommand
 
     private final InvalidationListener disabledInvalidated = observable -> updateDisabled();
 
-    private CommandActionList(Node node) {
+    private InvokeCommandActionList(Node node) {
         this.node = node;
     }
 

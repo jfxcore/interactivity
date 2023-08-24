@@ -22,6 +22,7 @@
 package org.jfxcore.command;
 
 import org.jfxcore.interaction.Behavior;
+import org.jfxcore.interaction.Trigger;
 import javafx.scene.Node;
 
 /**
@@ -66,7 +67,7 @@ public abstract class CommandHandlerBehavior<T extends Node> extends Behavior<T>
     /**
      * Occurs when the command is attached to a {@link Node}.
      * <p>
-     * When the command is bound to multiple events of a single {@code Node}, this method is only invoked once.
+     * When the command is attached to multiple triggers of a single {@code Node}, this method is only invoked once.
      * Note that this method will be invoked once for each {@code Node} to which this command is attached.
      *
      * @param command the command
@@ -76,11 +77,11 @@ public abstract class CommandHandlerBehavior<T extends Node> extends Behavior<T>
     /**
      * Occurs when the command is detached from a {@link Node}.
      * <p>
-     * This happens when the command is removed from its associated {@link EventTrigger}, or if the
-     * {@code EventTrigger} is removed from the {@code Node}.
-     * When the command is bound to multiple events of a single {@code Node}, the command is only detached
-     * after the last binding is removed. Note that this method will be invoked once for each {@code Node}
-     * from which this command is detached.
+     * This happens when the command is removed from its associated {@link Trigger}, or if the {@code Trigger}
+     * is removed from its associated {@code Node}.
+     * When the command is attached to multiple triggers of a single {@code Node}, the command is only detached
+     * from the node once it is removed from all triggers. Note that this method will be invoked once for each
+     * {@code Node} from which this command is detached.
      *
      * @param command the command
      */

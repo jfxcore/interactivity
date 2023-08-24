@@ -73,7 +73,7 @@ final class CommandHandlerBehaviorList extends ArrayList<CommandHandlerBehavior<
     }
 
     private void invokeHandler(CommandHandlerBehavior<?> handler, boolean attach) {
-        for (InvokeCommandAction action : CommandActionList.get(node)) {
+        for (InvokeCommandAction action : InvokeCommandActionList.get(node)) {
             Command command = action.getCommand();
             if (command != null) {
                 try {

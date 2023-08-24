@@ -305,12 +305,12 @@ public class InvokeCommandAction extends TriggerAction<Node> {
 
     @Override
     protected final void onAttached(Node node) {
-        CommandActionList.get(node).add(this);
+        InvokeCommandActionList.get(node).add(this);
     }
 
     @Override
     protected final void onDetached(Node node) {
-        CommandActionList.get(node).remove(this);
+        InvokeCommandActionList.get(node).remove(this);
     }
 
 }
