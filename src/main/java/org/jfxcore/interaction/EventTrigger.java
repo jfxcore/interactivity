@@ -21,6 +21,7 @@
 
 package org.jfxcore.interaction;
 
+import javafx.beans.NamedArg;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
@@ -28,7 +29,7 @@ import javafx.scene.Node;
 import java.util.Objects;
 
 /**
- * Base class for triggers that react to the occurrence of an {@link Event}.
+ * A trigger that reacts to the occurrence of an {@link Event}.
  *
  * @param <T> the node type
  * @param <E> the event type
@@ -37,7 +38,7 @@ import java.util.Objects;
  * @see MouseEventTrigger
  * @see TouchEventTrigger
  */
-public abstract class EventTrigger<T extends Node, E extends Event> extends Trigger<T> {
+public class EventTrigger<T extends Node, E extends Event> extends Trigger<T> {
 
     private final EventType<E> eventType;
     private final boolean eventFilter;
@@ -53,11 +54,36 @@ public abstract class EventTrigger<T extends Node, E extends Event> extends Trig
      * Initializes a new {@code EventTrigger} instance.
      *
      * @param eventType the event type
+     */
+    public EventTrigger(@NamedArg("eventType") EventType<E> eventType) {
+        this.eventType = Objects.requireNonNull(eventType, "eventType cannot be null");
+        this.eventFilter = false;
+    }
+
+    /**
+     * Initializes a new {@code EventTrigger} instance.
+     *
+     * @param eventType the event type
      * @param eventFilter {@code true} if the trigger should receive events in the capturing phase
      */
-    protected EventTrigger(EventType<E> eventType, boolean eventFilter) {
+    public EventTrigger(@NamedArg("eventType") EventType<E> eventType,
+                        @NamedArg("eventFilter") boolean eventFilter) {
         this.eventType = Objects.requireNonNull(eventType, "eventType cannot be null");
         this.eventFilter = eventFilter;
+    }
+
+    /**
+     * Initializes a new {@code EventTrigger} instance.
+     *
+     * @param eventType the event type
+     * @param actions the actions
+     */
+    @SafeVarargs
+    public EventTrigger(@NamedArg("eventType") EventType<E> eventType,
+                        @NamedArg("actions") TriggerAction<? super T>... actions) {
+        super(actions);
+        this.eventType = Objects.requireNonNull(eventType, "eventType cannot be null");
+        this.eventFilter = false;
     }
 
     /**
@@ -68,7 +94,9 @@ public abstract class EventTrigger<T extends Node, E extends Event> extends Trig
      * @param actions the actions
      */
     @SafeVarargs
-    protected EventTrigger(EventType<E> eventType, boolean eventFilter, TriggerAction<? super T>... actions) {
+    public EventTrigger(@NamedArg("eventType") EventType<E> eventType,
+                        @NamedArg("eventFilter") boolean eventFilter,
+                        @NamedArg("actions") TriggerAction<? super T>... actions) {
         super(actions);
         this.eventType = Objects.requireNonNull(eventType, "eventType cannot be null");
         this.eventFilter = eventFilter;
