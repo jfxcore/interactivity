@@ -21,6 +21,7 @@
 
 package org.jfxcore.interaction;
 
+import javafx.beans.NamedArg;
 import javafx.beans.property.ObjectProperty;
 import javafx.event.EventType;
 import javafx.scene.Node;
@@ -28,12 +29,21 @@ import javafx.scene.input.InputEvent;
 import java.util.Objects;
 
 /**
- * Base class for triggers that react to the occurrence of an {@link InputEvent}.
+ * A triggers that react to the occurrence of an {@link InputEvent}.
  *
  * @param <T> the node type
  * @param <E> the event type
  */
-public abstract class InputEventTrigger<T extends Node, E extends InputEvent> extends EventTrigger<T, E> {
+public class InputEventTrigger<T extends Node, E extends InputEvent> extends EventTrigger<T, E> {
+
+    /**
+     * Initializes a new {@code InputEventTrigger} instance.
+     *
+     * @param eventType the event type
+     */
+    public InputEventTrigger(@NamedArg("eventType") EventType<E> eventType) {
+        super(eventType);
+    }
 
     /**
      * Initializes a new {@code InputEventTrigger} instance.
@@ -41,8 +51,21 @@ public abstract class InputEventTrigger<T extends Node, E extends InputEvent> ex
      * @param eventType the event type
      * @param eventFilter {@code true} if the trigger should receive events in the capturing phase
      */
-    protected InputEventTrigger(EventType<E> eventType, boolean eventFilter) {
+    public InputEventTrigger(@NamedArg("eventType") EventType<E> eventType,
+                             @NamedArg("eventFilter") boolean eventFilter) {
         super(eventType, eventFilter);
+    }
+
+    /**
+     * Initializes a new {@code InputEventTrigger} instance with the specified actions.
+     *
+     * @param eventType the event type
+     * @param actions the actions
+     */
+    @SafeVarargs
+    public InputEventTrigger(@NamedArg("eventType") EventType<E> eventType,
+                             @NamedArg("actions") TriggerAction<? super T>... actions) {
+        super(eventType, actions);
     }
 
     /**
@@ -53,7 +76,9 @@ public abstract class InputEventTrigger<T extends Node, E extends InputEvent> ex
      * @param actions the actions
      */
     @SafeVarargs
-    protected InputEventTrigger(EventType<E> eventType, boolean eventFilter, TriggerAction<? super T>... actions) {
+    public InputEventTrigger(@NamedArg("eventType") EventType<E> eventType,
+                             @NamedArg("eventFilter") boolean eventFilter,
+                             @NamedArg("actions") TriggerAction<? super T>... actions) {
         super(eventType, eventFilter, actions);
     }
 
