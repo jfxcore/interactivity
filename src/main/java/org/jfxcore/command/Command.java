@@ -89,9 +89,9 @@ public abstract class Command {
      * applies to specific objects on which the {@code CommandHandlerBehavior} is set, while overriding
      * {@code onAttached} and {@code onDetached} applies to all objects to which this command is attached.
      *
-     * @param target the target to which this command is attached
+     * @param associatedObject the object to which this command is attached
      */
-    protected void onAttached(Object target) {}
+    protected void onAttached(Object associatedObject) {}
 
     /**
      * Occurs when the command is detached from an object.
@@ -104,8 +104,8 @@ public abstract class Command {
      * Derived classes can override this method to roll back changes that were established
      * by the {@link #onAttached onAttached} method.
      *
-     * @param target the target to which this command was attached
+     * @param associatedObject the object to which this command was attached
      */
-    protected void onDetached(Object target) {}
+    protected void onDetached(Object associatedObject) {}
 
 }

@@ -59,7 +59,7 @@ public class TestCommand extends AsyncCommand {
     }
 
     @Override
-    protected void onAttached(Object target) {
+    protected void onAttached(Object associatedObject) {
         if (trace != null) {
             trace.add("+" + name);
         }
@@ -70,7 +70,7 @@ public class TestCommand extends AsyncCommand {
     }
 
     @Override
-    protected void onDetached(Object target) {
+    protected void onDetached(Object associatedObject) {
         if (trace != null) {
             trace.add("-" + name);
         }
