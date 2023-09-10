@@ -29,20 +29,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * {@code Trigger} is the base class for reusable components that extend scene graph nodes with the
- * capability to run {@link TriggerAction actions} when a condition is met or an event is received.
+ * {@code Trigger} is the base class for reusable components that extend JavaFX entities with the
+ * capability to run {@link TriggerAction actions} when the trigger is released. This happens in
+ * an implementation-defined way; for example, an {@link EventTrigger} releases when an event is
+ * received.
  * <p>
- * A trigger is attached to a scene graph node by adding it to the node's {@link Interaction#getTriggers}.
+ * A trigger is attached to a JavaFX entity by adding it to its triggers list, which can be
+ * retrieved with the {@link Interaction#getTriggers} method.
  * <p>
- * Implementations can override the {@link #onAttached} and {@link #onDetached} methods to run custom
- * code, install listeners, or configure the associated node.
+ * Implementations can override the {@link #onAttached} and {@link #onDetached} methods to run
+ * custom code, install listeners, or configure the associated entity.
  *
- * @param <T> the node type
+ * @param <T> the target of this trigger, for example a {@link Node}
+ * @param <P> the type of the parameter that this trigger provides to its actions
  */
 @DefaultProperty("actions")
-public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
+public abstract non-sealed class Trigger<T, P> extends Attachable<T> {
 
-    private final ActionList<T> actions;
+    private final ActionList<T, P> actions;
 
     /**
      * Initializes a new {@code Trigger} instance.
@@ -57,18 +61,18 @@ public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
      * @param actions the actions
      */
     @SafeVarargs
-    protected Trigger(TriggerAction<? super T>... actions) {
+    protected Trigger(TriggerAction<? super T, ? super P>... actions) {
         this.actions = new ActionList<>(this, List.of(actions));
     }
 
     /**
-     * Gets the associated node.
+     * Gets the associated object.
      *
-     * @return the associated node, or {@code null} if this trigger is not associated with a node
+     * @return the associated object, or {@code null} if this trigger is not associated with an object
      */
     @Override
-    public final T getAssociatedNode() {
-        return super.getAssociatedNode();
+    public final T getAssociatedObject() {
+        return super.getAssociatedObject();
     }
 
     /**
@@ -76,21 +80,21 @@ public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
      *
      * @return an {@code ObservableList} of {@code TriggerAction} instances
      */
-    public final ObservableList<TriggerAction<? super T>> getActions() {
+    public final ObservableList<TriggerAction<? super T, ? super P>> getActions() {
         return actions;
     }
 
-    private static class ActionList<T extends Node> extends ModifiableObservableListBase<TriggerAction<? super T>> {
-        final List<TriggerAction<? super T>> backingList;
-        final Trigger<T> trigger;
+    private static class ActionList<T, P> extends ModifiableObservableListBase<TriggerAction<? super T, ? super P>> {
+        final List<TriggerAction<? super T, ? super P>> backingList;
+        final Trigger<T, P> trigger;
 
-        ActionList(Trigger<T> trigger, List<TriggerAction<? super T>> backingList) {
+        ActionList(Trigger<T, P> trigger, List<TriggerAction<? super T, ? super P>> backingList) {
             this.trigger = trigger;
             this.backingList = backingList;
         }
 
         @Override
-        public TriggerAction<? super T> get(int index) {
+        public TriggerAction<? super T, ? super P> get(int index) {
             return backingList.get(index);
         }
 
@@ -100,15 +104,15 @@ public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
         }
 
         @Override
-        protected void doAdd(int index, TriggerAction<? super T> element) {
+        protected void doAdd(int index, TriggerAction<? super T, ? super P> element) {
             checkPreconditions(element);
             backingList.add(index, element);
             element.associatedTrigger = trigger;
-            T node = trigger.associatedNode;
+            T associatedObject = trigger.associatedObject;
 
-            if (node != null) {
+            if (associatedObject != null) {
                 try {
-                    element.onAttached(node);
+                    element.onAttached(associatedObject);
                 } catch (Throwable ex) {
                     Thread currentThread = Thread.currentThread();
                     currentThread.getUncaughtExceptionHandler().uncaughtException(currentThread, ex);
@@ -117,18 +121,18 @@ public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
         }
 
         @Override
-        protected TriggerAction<? super T> doSet(int index, TriggerAction<? super T> element) {
+        protected TriggerAction<? super T, ? super P> doSet(int index, TriggerAction<? super T, ? super P> element) {
             checkPreconditions(element);
-            TriggerAction<? super T> oldElement = backingList.set(index, element);
-            T node = trigger.associatedNode;
-            if (node == null) {
+            TriggerAction<? super T, ? super P> oldElement = backingList.set(index, element);
+            T associatedObject = trigger.associatedObject;
+            if (associatedObject == null) {
                 return oldElement;
             }
 
             Throwable exception = null;
 
             try {
-                oldElement.onDetached(node);
+                oldElement.onDetached(associatedObject);
             } catch (Throwable ex) {
                 exception = ex;
             }
@@ -137,7 +141,7 @@ public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
             element.associatedTrigger = trigger;
 
             try {
-                element.onAttached(node);
+                element.onAttached(associatedObject);
             } catch (Throwable ex) {
                 if (exception != null) {
                     ex.addSuppressed(exception);
@@ -155,12 +159,12 @@ public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
         }
 
         @Override
-        protected TriggerAction<? super T> doRemove(int index) {
-            TriggerAction<? super T> oldAction = backingList.remove(index);
-            T node = trigger.associatedNode;
+        protected TriggerAction<? super T, ? super P> doRemove(int index) {
+            TriggerAction<? super T, ? super P> oldAction = backingList.remove(index);
+            T associatedObject = trigger.associatedObject;
             try {
-                if (node != null) {
-                    oldAction.onDetached(node);
+                if (associatedObject != null) {
+                    oldAction.onDetached(associatedObject);
                 }
             } catch (Throwable ex) {
                 Thread currentThread = Thread.currentThread();
@@ -172,7 +176,7 @@ public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
             return oldAction;
         }
 
-        private void checkPreconditions(TriggerAction<?> action) {
+        private void checkPreconditions(TriggerAction<?, ?> action) {
             if (action == null) {
                 throw new NullPointerException(
                     TriggerAction.class.getSimpleName() + " cannot be null.");
@@ -191,26 +195,26 @@ public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
     }
 
     /**
-     * Occurs when the trigger is attached to a node.
+     * Occurs when the trigger is attached to an object.
      *
-     * @param node the node
+     * @param associatedObject the associated object
      */
-    protected void onAttached(T node) {}
+    protected void onAttached(T associatedObject) {}
 
     /**
-     * Occurs when the trigger is detached from a node.
+     * Occurs when the trigger is detached from an object.
      *
-     * @param node the node
+     * @param associatedObject the associated object
      */
-    protected void onDetached(T node) {}
+    protected void onDetached(T associatedObject) {}
 
     @Override
-    final void attach(T node) {
-        onAttached(node);
+    final void attach(T associatedObject) {
+        onAttached(associatedObject);
 
-        for (TriggerAction<? super T> action : actions) {
+        for (TriggerAction<? super T, ? super P> action : actions) {
             try {
-                action.onAttached(node);
+                action.onAttached(associatedObject);
             } catch (Throwable ex) {
                 Thread currentThread = Thread.currentThread();
                 currentThread.getUncaughtExceptionHandler().uncaughtException(currentThread, ex);
@@ -219,12 +223,12 @@ public abstract non-sealed class Trigger<T extends Node> extends Attachable<T> {
     }
 
     @Override
-    final void detach(T node) {
-        onDetached(node);
+    final void detach(T associatedObject) {
+        onDetached(associatedObject);
 
-        for (TriggerAction<? super T> action : actions) {
+        for (TriggerAction<? super T, ? super P> action : actions) {
             try {
-                action.onDetached(node);
+                action.onDetached(associatedObject);
             } catch (Throwable ex) {
                 Thread currentThread = Thread.currentThread();
                 currentThread.getUncaughtExceptionHandler().uncaughtException(currentThread, ex);

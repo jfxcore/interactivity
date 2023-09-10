@@ -21,23 +21,21 @@
 
 package org.jfxcore.interaction;
 
-import javafx.scene.Node;
-
 /**
- * Base class for objects that can be attached to a {@link Node}.
+ * Base class for objects that can be attached to a JavaFX entity.
  *
- * @param <T> the node type
+ * @param <T> the entity type
  */
-abstract sealed class Attachable<T extends Node> permits Behavior, Trigger {
+abstract sealed class Attachable<T> permits Behavior, Trigger {
 
-    T associatedNode;
+    T associatedObject;
 
-    T getAssociatedNode() {
-        return associatedNode;
+    T getAssociatedObject() {
+        return associatedObject;
     }
 
-    abstract void attach(T node);
+    abstract void attach(T associatedObject);
 
-    abstract void detach(T node);
+    abstract void detach(T associatedObject);
 
 }

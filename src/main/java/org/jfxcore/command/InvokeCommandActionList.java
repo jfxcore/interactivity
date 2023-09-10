@@ -27,15 +27,25 @@ import javafx.collections.ModifiableObservableListBase;
 import javafx.scene.Node;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 final class InvokeCommandActionList extends ModifiableObservableListBase<InvokeCommandAction> {
 
-    public static InvokeCommandActionList get(Node node) {
-        return (InvokeCommandActionList)node.getProperties().computeIfAbsent(
-            InvokeCommandActionList.class, key -> new InvokeCommandActionList(node));
+    private static final Map<Object, InvokeCommandActionList> lists = new WeakHashMap<>();
+
+    public static InvokeCommandActionList get(Object owner) {
+        if (owner instanceof Node node) {
+            return (InvokeCommandActionList)node.getProperties().computeIfAbsent(
+                InvokeCommandActionList.class, key -> new InvokeCommandActionList(node));
+        }
+
+        synchronized (lists) {
+            return lists.computeIfAbsent(owner, key -> new InvokeCommandActionList(owner));
+        }
     }
 
-    private final Node node;
+    private final Object owner;
     private final List<InvokeCommandAction> list = new ArrayList<>(1);
 
     private final ChangeListener<Command> commandChanged = (observable, oldValue, newValue) -> {
@@ -46,8 +56,8 @@ final class InvokeCommandActionList extends ModifiableObservableListBase<InvokeC
 
     private final InvalidationListener disabledInvalidated = observable -> updateDisabled();
 
-    private InvokeCommandActionList(Node node) {
-        this.node = node;
+    private InvokeCommandActionList(Object owner) {
+        this.owner = owner;
     }
 
     @Override
@@ -122,9 +132,9 @@ final class InvokeCommandActionList extends ModifiableObservableListBase<InvokeC
     private void invokeCommand(Command command, boolean attach) {
         try {
             if (attach) {
-                command.onAttached(node);
+                command.onAttached(owner);
             } else {
-                command.onDetached(node);
+                command.onDetached(owner);
             }
         } catch (Throwable ex) {
             Thread thread = Thread.currentThread();
@@ -133,7 +143,7 @@ final class InvokeCommandActionList extends ModifiableObservableListBase<InvokeC
     }
 
     private void invokeHandler(Command command, boolean attach) {
-        List<CommandHandlerBehavior<?>> commandHandlerBehaviors = CommandHandlerBehaviorList.tryGet(node);
+        List<CommandHandlerBehavior<?>> commandHandlerBehaviors = CommandHandlerBehaviorList.tryGet(owner);
         if (commandHandlerBehaviors == null || commandHandlerBehaviors.isEmpty()) {
             return;
         }
@@ -153,8 +163,10 @@ final class InvokeCommandActionList extends ModifiableObservableListBase<InvokeC
     }
 
     private void updateDisabled() {
-        if (!node.disableProperty().isBound()) {
-            node.setDisable(isDisabled());
+        if (owner instanceof Node node) {
+            if (!node.disableProperty().isBound()) {
+                node.setDisable(isDisabled());
+            }
         }
     }
 

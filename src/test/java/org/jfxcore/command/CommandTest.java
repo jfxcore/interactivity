@@ -50,8 +50,8 @@ public class CommandTest {
         var pane = new Pane();
         var command1 = new TestCommand(trace, "A", failOnAttachDetach);
         var command2 = new TestCommand(trace, "B", failOnAttachDetach);
-        var trigger1 = new ActionEventTrigger<>(new InvokeCommandAction(command1));
-        var trigger2 = new ActionEventTrigger<>(new InvokeCommandAction(command2));
+        var trigger1 = new ActionEventTrigger(new InvokeCommandAction(command1));
+        var trigger2 = new ActionEventTrigger(new InvokeCommandAction(command2));
         Interaction.getTriggers(pane).add(trigger1);
         Interaction.getTriggers(pane).add(trigger2);
         assertEquals(2, InvokeCommandActionList.get(pane).size());
@@ -70,7 +70,7 @@ public class CommandTest {
         var pane = new Pane();
         var command = new TestCommand(trace, "A", false);
         var commandAction = new InvokeCommandAction();
-        var trigger = new KeyEventTrigger<>(KeyEvent.KEY_PRESSED, commandAction);
+        var trigger = new KeyEventTrigger(KeyEvent.KEY_PRESSED, commandAction);
         Interaction.getTriggers(pane).add(trigger);
         assertEquals(1, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of(), trace);
@@ -88,9 +88,9 @@ public class CommandTest {
         var pane = new Pane();
         var command = new TestCommand(trace, "A", false);
         var commandAction1 = new InvokeCommandAction(command);
-        var trigger1 = new KeyEventTrigger<>(KeyEvent.KEY_PRESSED, commandAction1);
+        var trigger1 = new KeyEventTrigger(KeyEvent.KEY_PRESSED, commandAction1);
         var commandAction2 = new InvokeCommandAction(command);
-        var trigger2 = new KeyEventTrigger<>(KeyEvent.KEY_RELEASED, commandAction2);
+        var trigger2 = new KeyEventTrigger(KeyEvent.KEY_RELEASED, commandAction2);
 
         Interaction.getTriggers(pane).addAll(trigger1, trigger2);
         assertEquals(2, InvokeCommandActionList.get(pane).size());

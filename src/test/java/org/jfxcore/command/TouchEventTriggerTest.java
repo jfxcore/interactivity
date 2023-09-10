@@ -30,7 +30,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import javafx.event.Event;
 import javafx.event.EventTarget;
-import javafx.scene.Node;
 import javafx.scene.input.TouchEvent;
 import javafx.scene.input.TouchPoint;
 import javafx.scene.layout.Pane;
@@ -42,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TouchEventTriggerTest {
 
     static TestCountingCommand command;
-    static TouchEventTrigger<Node> trigger;
+    static TouchEventTrigger trigger;
     static Pane pane;
 
     @BeforeAll
@@ -54,7 +53,7 @@ public class TouchEventTriggerTest {
     @BeforeEach
     void beforeEach() {
         command.count = 0;
-        trigger = new TouchEventTrigger<>(TouchEvent.TOUCH_PRESSED);
+        trigger = new TouchEventTrigger(TouchEvent.TOUCH_PRESSED);
         trigger.getActions().add(new InvokeCommandAction(command));
         Interaction.getTriggers(pane).add(trigger);
     }

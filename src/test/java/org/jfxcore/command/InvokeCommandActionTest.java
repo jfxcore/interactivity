@@ -74,9 +74,9 @@ public class InvokeCommandActionTest {
     @Test
     public void testActionCannotBeReused() {
         var action = new InvokeCommandAction();
-        var trigger1 = new ActionEventTrigger<>();
+        var trigger1 = new ActionEventTrigger();
         trigger1.getActions().add(action);
-        var trigger2 = new ActionEventTrigger<>();
+        var trigger2 = new ActionEventTrigger();
         assertThrows(IllegalStateException.class, () -> trigger2.getActions().add(action));
         trigger1.getActions().remove(action);
         assertDoesNotThrow(() -> trigger2.getActions().add(action));

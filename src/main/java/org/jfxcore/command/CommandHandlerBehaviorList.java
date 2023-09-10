@@ -23,37 +23,51 @@ package org.jfxcore.command;
 
 import javafx.scene.Node;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 final class CommandHandlerBehaviorList extends ArrayList<CommandHandlerBehavior<?>> {
 
-    public static CommandHandlerBehaviorList tryGet(Node node) {
-        if (node.hasProperties()) {
+    private static final Map<Object, CommandHandlerBehaviorList> lists = new WeakHashMap<>();
+
+    public static CommandHandlerBehaviorList tryGet(Object owner) {
+        if (owner instanceof Node node && node.hasProperties()) {
             return (CommandHandlerBehaviorList)node.getProperties().get(CommandHandlerBehaviorList.class);
         }
 
-        return null;
+        synchronized (lists) {
+            return lists.get(owner);
+        }
     }
 
-    public static CommandHandlerBehaviorList get(Node node) {
-        return (CommandHandlerBehaviorList)node.getProperties().computeIfAbsent(
-            CommandHandlerBehaviorList.class, key -> new CommandHandlerBehaviorList(node));
+    public static CommandHandlerBehaviorList get(Object owner) {
+        if (owner instanceof Node node) {
+            return (CommandHandlerBehaviorList)node.getProperties().computeIfAbsent(
+                CommandHandlerBehaviorList.class, key -> new CommandHandlerBehaviorList(node));
+        }
+
+        synchronized (lists) {
+            return lists.computeIfAbsent(owner, key -> new CommandHandlerBehaviorList(owner));
+        }
     }
 
-    private final Node node;
+    private final Object owner;
 
-    private CommandHandlerBehaviorList(Node node) {
+    private CommandHandlerBehaviorList(Object owner) {
         super(2);
-        this.node = node;
+        this.owner = owner;
     }
 
     @Override
     public boolean add(CommandHandlerBehavior handler) {
         if (handler == null) {
-            throw new NullPointerException(CommandHandlerBehavior.class.getSimpleName() + " cannot be null");
+            throw new NullPointerException(
+                CommandHandlerBehavior.class.getSimpleName() + " cannot be null");
         }
 
         if (contains(handler)) {
-            throw new IllegalStateException(CommandHandlerBehavior.class.getSimpleName() + " is already set on " + node);
+            throw new IllegalStateException(
+                CommandHandlerBehavior.class.getSimpleName() + " is already set on " + owner);
         }
 
         super.add(handler);
@@ -73,7 +87,7 @@ final class CommandHandlerBehaviorList extends ArrayList<CommandHandlerBehavior<
     }
 
     private void invokeHandler(CommandHandlerBehavior<?> handler, boolean attach) {
-        for (InvokeCommandAction action : InvokeCommandActionList.get(node)) {
+        for (InvokeCommandAction action : InvokeCommandActionList.get(owner)) {
             Command command = action.getCommand();
             if (command != null) {
                 try {

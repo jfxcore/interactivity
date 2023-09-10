@@ -35,17 +35,15 @@ import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableBooleanValue;
 import javafx.event.Event;
-import javafx.scene.Node;
 
 /**
  * An action that invokes a {@link Command}.
  * <p>
- * By default, this action {@link Node#disabledProperty() disables} its associated node when
- * the command is not executable or while it is running. This behavior can be toggled with the
- * {@link InvokeCommandAction#disabledWhenExecuting} property.
+ * By default, this action disables its associated object when the command is not executable or while it is running.
+ * This behavior can be toggled with the {@link InvokeCommandAction#disabledWhenExecuting} property.
  */
 @DefaultProperty("command")
-public class InvokeCommandAction extends TriggerAction<Node> {
+public class InvokeCommandAction extends TriggerAction<Object, Object> {
 
     private class DisabledValue extends ReadOnlyBooleanPropertyBase implements InvalidationListener {
         boolean disabledWhenExecuting = true;
@@ -231,8 +229,8 @@ public class InvokeCommandAction extends TriggerAction<Node> {
     }
 
     /**
-     * Indicates whether the {@link Node} to which this {@code InvokeCommandAction} applies will be
-     * {@link Node#disabledProperty() disabled} for the duration of the command execution.
+     * Indicates whether the object to which this {@code InvokeCommandAction} applies will be
+     * disabled for the duration of the command execution.
      *
      * @defaultValue true
      */
@@ -304,13 +302,13 @@ public class InvokeCommandAction extends TriggerAction<Node> {
     }
 
     @Override
-    protected final void onAttached(Node node) {
-        InvokeCommandActionList.get(node).add(this);
+    protected final void onAttached(Object associatedObject) {
+        InvokeCommandActionList.get(associatedObject).add(this);
     }
 
     @Override
-    protected final void onDetached(Node node) {
-        InvokeCommandActionList.get(node).remove(this);
+    protected final void onDetached(Object associatedObject) {
+        InvokeCommandActionList.get(associatedObject).remove(this);
     }
 
 }

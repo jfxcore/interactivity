@@ -71,13 +71,13 @@ public class TriggerActionTest {
     @Test
     public void testTriggerActionThrowingInOnAttachMethodIsCorrectlyAdded() {
         var node = new Pane();
-        var trigger = new Trigger<>() {};
-        var action = new TriggerAction<>() {
+        var trigger = new Trigger<Node, Object>() {};
+        var action = new TriggerAction<Node, Object>() {
             @Override
             protected void onExecute(Object parameter) {}
 
             @Override
-            protected void onAttached(Node node) {
+            protected void onAttached(Node associatedObject) {
                 throw new RuntimeException("foo");
             }
         };
@@ -97,22 +97,22 @@ public class TriggerActionTest {
     @Test
     public void testTriggerActionThrowingInOnAttachMethodIsCorrectlySet() {
         var pane = new Pane();
-        var trigger = new Trigger<>() {};
-        var action1 = new TriggerAction<>() {
+        var trigger = new Trigger<Node, Object>() {};
+        var action1 = new TriggerAction<Node, Object>() {
             @Override
             protected void onExecute(Object parameter) {}
 
             @Override
-            protected void onDetached(Node node) {
+            protected void onDetached(Node associatedObject) {
                 throw new RuntimeException("trigger1");
             }
         };
-        var action2 = new TriggerAction<>() {
+        var action2 = new TriggerAction<Node, Object>() {
             @Override
             protected void onExecute(Object parameter) {}
 
             @Override
-            protected void onAttached(Node node) {
+            protected void onAttached(Node associatedObject) {
                 throw new RuntimeException("trigger2");
             }
         };
@@ -136,13 +136,13 @@ public class TriggerActionTest {
     @Test
     public void testTriggerActionThrowingInOnDetachMethodIsCorrectlyRemoved() {
         var pane = new Pane();
-        var trigger = new Trigger<>() {};
-        var action = new TriggerAction<>() {
+        var trigger = new Trigger<Node, Object>() {};
+        var action = new TriggerAction<Node, Object>() {
             @Override
             protected void onExecute(Object parameter) {}
 
             @Override
-            protected void onDetached(Node node) {
+            protected void onDetached(Node associatedObject) {
                 throw new RuntimeException("foo");
             }
         };

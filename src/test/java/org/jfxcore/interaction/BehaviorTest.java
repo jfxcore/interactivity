@@ -42,6 +42,16 @@ public class BehaviorTest {
     }
 
     @Test
+    public void testAddAndRemoveBehaviorNonNode() {
+        var owner = new Object();
+        var behavior = new Behavior<>() {};
+        Interaction.getBehaviors(owner).add(behavior);
+        assertEquals(List.of(behavior), Interaction.getBehaviors(owner));
+        Interaction.getBehaviors(owner).remove(behavior);
+        assertEquals(List.of(), Interaction.getBehaviors(owner));
+    }
+
+    @Test
     public void testCannotAddBehaviorMultipleTimes() {
         var pane = new Pane();
         var behavior = new Behavior<>() {};
@@ -65,9 +75,9 @@ public class BehaviorTest {
     @Test
     public void testBehaviorThrowingInOnAttachMethodIsCorrectlyAdded() {
         var pane = new Pane();
-        var behavior = new Behavior<>() {
+        var behavior = new Behavior<Node>() {
             @Override
-            protected void onAttached(Node node) {
+            protected void onAttached(Node associatedObject) {
                 throw new RuntimeException("foo");
             }
         };
@@ -83,15 +93,15 @@ public class BehaviorTest {
     @Test
     public void testBehaviorThrowingInOnAttachMethodIsCorrectlySet() {
         var pane = new Pane();
-        var behavior1 = new Behavior<>() {
+        var behavior1 = new Behavior<Node>() {
             @Override
-            protected void onDetached(Node node) {
+            protected void onDetached(Node associatedObject) {
                 throw new RuntimeException("behavior1");
             }
         };
-        var behavior2 = new Behavior<>() {
+        var behavior2 = new Behavior<Node>() {
             @Override
-            protected void onAttached(Node node) {
+            protected void onAttached(Node associatedObject) {
                 throw new RuntimeException("behavior2");
             }
         };
@@ -113,9 +123,9 @@ public class BehaviorTest {
     @Test
     public void testBehaviorThrowingInOnDetachMethodIsCorrectlyRemoved() {
         var pane = new Pane();
-        var behavior = new Behavior<>() {
+        var behavior = new Behavior<Node>() {
             @Override
-            protected void onDetached(Node node) {
+            protected void onDetached(Node associatedObject) {
                 throw new RuntimeException("foo");
             }
         };

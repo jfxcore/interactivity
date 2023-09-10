@@ -41,7 +41,7 @@ public class CommandHandlerBehaviorTest {
         var pane = new Pane();
         Interaction.getBehaviors(pane).add(handler);
         assertEquals(List.of(), trace);
-        var trigger = new ActionEventTrigger<>();
+        var trigger = new ActionEventTrigger();
         trigger.getActions().add(new InvokeCommandAction(new TestCommand(trace, "A", false)));
         Interaction.getTriggers(pane).add(trigger);
         assertEquals(List.of("+A", "+H"), trace);
@@ -53,7 +53,7 @@ public class CommandHandlerBehaviorTest {
     public void testCommandHandlerIsInvokedForExistingCommand() {
         var trace = new ArrayList<String>();
         var pane = new Pane();
-        var trigger = new ActionEventTrigger<>();
+        var trigger = new ActionEventTrigger();
         trigger.getActions().add(new InvokeCommandAction(new TestCommand(trace, "A", false)));
         Interaction.getTriggers(pane).add(trigger);
         assertEquals(List.of("+A"), trace);
@@ -69,7 +69,7 @@ public class CommandHandlerBehaviorTest {
         var pane = new Pane();
         Interaction.getBehaviors(pane).add(handler);
         assertEquals(List.of(), trace);
-        var trigger = new ActionEventTrigger<>();
+        var trigger = new ActionEventTrigger();
         trigger.getActions().add(new InvokeCommandAction(new TestCommand(trace, "A", false)));
         Interaction.getTriggers(pane).add(trigger);
         assertEquals(List.of("+A", "+H"), trace);
