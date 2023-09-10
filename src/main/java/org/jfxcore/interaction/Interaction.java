@@ -36,6 +36,8 @@ import java.util.WeakHashMap;
  */
 public final class Interaction {
 
+    private Interaction() {}
+
     /**
      * Stores behavior lists for non-{@code Node} owners.
      */
