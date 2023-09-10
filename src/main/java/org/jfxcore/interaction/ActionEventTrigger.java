@@ -23,14 +23,12 @@ package org.jfxcore.interaction;
 
 import javafx.beans.NamedArg;
 import javafx.event.ActionEvent;
-import javafx.scene.Node;
+import javafx.event.EventTarget;
 
 /**
  * Triggers actions when an {@link ActionEvent} occurs.
- *
- * @param <T> the node type
  */
-public class ActionEventTrigger<T extends Node> extends EventTrigger<T, ActionEvent> {
+public class ActionEventTrigger extends EventTrigger<ActionEvent> {
 
     /**
      * Initializes a new {@code ActionEventTrigger} instance.
@@ -54,7 +52,7 @@ public class ActionEventTrigger<T extends Node> extends EventTrigger<T, ActionEv
      * @param actions the actions
      */
     @SafeVarargs
-    public ActionEventTrigger(@NamedArg("actions") TriggerAction<T>... actions) {
+    public ActionEventTrigger(@NamedArg("actions") TriggerAction<? super EventTarget, ? super ActionEvent>... actions) {
         super(ActionEvent.ACTION, false, actions);
     }
 
@@ -66,7 +64,7 @@ public class ActionEventTrigger<T extends Node> extends EventTrigger<T, ActionEv
      */
     @SafeVarargs
     public ActionEventTrigger(@NamedArg("eventFilter") boolean eventFilter,
-                              @NamedArg("actions") TriggerAction<T>... actions) {
+                              @NamedArg("actions") TriggerAction<? super EventTarget, ? super ActionEvent>... actions) {
         super(ActionEvent.ACTION, eventFilter, actions);
     }
 

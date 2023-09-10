@@ -26,11 +26,12 @@ import javafx.scene.Node;
 /**
  * Encapsulates an action that is invoked by a {@link Trigger}.
  *
- * @param <T> the node type
+ * @param <T> the target of this action, for example a {@link Node}
+ * @param <P> the parameter type of this action
  */
-public abstract class TriggerAction<T extends Node> {
+public abstract class TriggerAction<T, P> {
 
-    Trigger<? extends T> associatedTrigger;
+    Trigger<? extends T, ?> associatedTrigger;
 
     /**
      * Initializes a new {@code TriggerAction} instance.
@@ -38,12 +39,12 @@ public abstract class TriggerAction<T extends Node> {
     protected TriggerAction() {}
 
     /**
-     * Gets the node that is associated with this {@code TriggerAction}.
+     * Gets the object that is associated with this {@code TriggerAction}.
      *
-     * @return the node, or {@code null} if this action is not associated with a node
+     * @return the associated object, or {@code null} if this action is not associated with an object
      */
-    public final T getAssociatedNode() {
-        return associatedTrigger != null ? associatedTrigger.getAssociatedNode() : null;
+    public final T getAssociatedObject() {
+        return associatedTrigger != null ? associatedTrigger.getAssociatedObject() : null;
     }
 
     /**
@@ -51,20 +52,20 @@ public abstract class TriggerAction<T extends Node> {
      *
      * @param parameter the parameter that is passed to the action, or {@code null}
      */
-    protected abstract void onExecute(Object parameter);
+    protected abstract void onExecute(P parameter);
 
     /**
-     * Occurs when the {@code TriggerAction} is attached to a node.
+     * Occurs when the {@code TriggerAction} is attached to an object.
      *
-     * @param node the node
+     * @param associatedObject the associated object
      */
-    protected void onAttached(T node) {}
+    protected void onAttached(T associatedObject) {}
 
     /**
-     * Occurs when the {@code TriggerAction} is detached from a node.
+     * Occurs when the {@code TriggerAction} is detached from an object.
      *
-     * @param node the node
+     * @param associatedObject the associated object
      */
-    protected void onDetached(T node) {}
+    protected void onDetached(T associatedObject) {}
 
 }

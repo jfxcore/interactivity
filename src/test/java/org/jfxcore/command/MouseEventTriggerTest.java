@@ -30,7 +30,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import javafx.event.Event;
 import javafx.event.EventTarget;
-import javafx.scene.Node;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
@@ -42,7 +41,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class MouseEventTriggerTest {
 
     static TestCountingCommand command;
-    static MouseEventTrigger<Node> trigger;
+    static MouseEventTrigger trigger;
     static Pane pane;
 
     @BeforeAll
@@ -54,7 +53,7 @@ public class MouseEventTriggerTest {
     @BeforeEach
     void beforeEach() {
         command.count = 0;
-        trigger = new MouseEventTrigger<>(MouseEvent.MOUSE_PRESSED);
+        trigger = new MouseEventTrigger(MouseEvent.MOUSE_PRESSED);
         trigger.getActions().add(new InvokeCommandAction(command));
         Interaction.getTriggers(pane).add(trigger);
     }

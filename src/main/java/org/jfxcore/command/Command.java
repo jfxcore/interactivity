@@ -22,7 +22,6 @@
 package org.jfxcore.command;
 
 import javafx.beans.property.ReadOnlyBooleanProperty;
-import javafx.scene.Node;
 
 /**
  * Represents an operation that can be invoked in various ways, such as by clicking a button,
@@ -76,37 +75,37 @@ public abstract class Command {
     protected abstract void onExecute(Object parameter);
 
     /**
-     * Occurs when the command is attached to a {@link Node}.
+     * Occurs when the command is attached to an object.
      * <p>
-     * If the command is added to multiple {@link InvokeCommandAction} instances on a single {@code Node},
-     * this method is only invoked once. Note that a command can be attached to multiple different nodes;
-     * this method will be invoked once for each {@code Node} to which this command is attached.
+     * If the command is added to multiple {@link InvokeCommandAction} instances on a single object, this
+     * method is only invoked once. Note that a command can be attached to multiple different objects;
+     * this method will be invoked once for each object to which this command is attached.
      * <p>
      * Derived classes can override this method to implement logic that the command uses to configure the
      * controls to which it is attached. For example, a command implementation could set a control's
      * {@code Labeled.textProperty()} to a user-defined value.
      * Implementing the {@code onAttached} and {@code onDetached} methods is an alternative to using a
-     * {@link CommandHandlerBehavior}. The major difference is that {@code CommandHandlerBehavior} only applies to specific
-     * nodes on which the {@code CommandHandlerBehavior} is set, while overriding {@code onAttached} and
-     * {@code onDetached} applies to all nodes to which this command is attached.
+     * {@link CommandHandlerBehavior}. The major difference is that {@code CommandHandlerBehavior} only
+     * applies to specific objects on which the {@code CommandHandlerBehavior} is set, while overriding
+     * {@code onAttached} and {@code onDetached} applies to all objects to which this command is attached.
      *
-     * @param node the node to which this command is attached
+     * @param target the target to which this command is attached
      */
-    protected void onAttached(Node node) {}
+    protected void onAttached(Object target) {}
 
     /**
-     * Occurs when the command is detached from a {@link Node}.
+     * Occurs when the command is detached from an object.
      * <p>
-     * If the command was added to multiple {@link InvokeCommandAction} instances on a single {@code Node},
-     * this method is only invoked after it is removed from all {@code InvokeCommandAction} instances.
-     * Note that a command can be attached to multiple different nodes; this method will be invoked once
-     * for each {@code Node} from which this command is detached.
+     * If the command was added to multiple {@link InvokeCommandAction} instances on a single object, this
+     * method is only invoked after it is removed from all {@code InvokeCommandAction} instances.
+     * Note that a command can be attached to multiple different objects; this method will be invoked once
+     * for each object from which this command is detached.
      * <p>
      * Derived classes can override this method to roll back changes that were established
      * by the {@link #onAttached onAttached} method.
      *
-     * @param node the node to which this command was attached
+     * @param target the target to which this command was attached
      */
-    protected void onDetached(Node node) {}
+    protected void onDetached(Object target) {}
 
 }

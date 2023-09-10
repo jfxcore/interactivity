@@ -24,16 +24,18 @@ package org.jfxcore.interaction;
 import javafx.scene.Node;
 
 /**
- * {@code Behavior} is the base class for reusable components that can extend the behavior of scene graph nodes.
+ * {@code Behavior} is the base class for reusable components that can extend the behavior of
+ * JavaFX entities.
  * <p>
- * A behavior is attached to a scene graph node by adding it to the node's {@link Interaction#getBehaviors}.
+ * A behavior is attached to a JavaFX entity by adding it to its behaviors list, which can be
+ * retrieved with the {@link Interaction#getBehaviors} method.
  * <p>
- * Implementations can override the {@link #onAttached} and {@link #onDetached} methods to run custom
- * code, install listeners, or configure the associated node.
+ * Implementations can override the {@link #onAttached} and {@link #onDetached} methods to run
+ * custom code, install listeners, or configure the associated entity.
  *
- * @param <T> the node type
+ * @param <T> the target of this behavior, for example a {@link Node}
  */
-public abstract non-sealed class Behavior<T extends Node> extends Attachable<T> {
+public abstract non-sealed class Behavior<T> extends Attachable<T> {
 
     /**
      * Initializes a new {@code Behavior} instance.
@@ -41,37 +43,37 @@ public abstract non-sealed class Behavior<T extends Node> extends Attachable<T> 
     protected Behavior() {}
 
     /**
-     * Gets the associated node.
+     * Gets the associated object.
      *
-     * @return the associated node, or {@code null} if this behavior is not associated with a node
+     * @return the associated object, or {@code null} if this behavior is not associated with an object
      */
     @Override
-    public final T getAssociatedNode() {
-        return super.getAssociatedNode();
+    public final T getAssociatedObject() {
+        return super.getAssociatedObject();
     }
 
     /**
-     * Occurs when the behavior is attached to a node.
+     * Occurs when the behavior is attached to an object.
      *
-     * @param node the node
+     * @param associatedObject the associated object
      */
-    protected void onAttached(T node) {}
+    protected void onAttached(T associatedObject) {}
 
     /**
-     * Occurs when the behavior is detached from a node.
+     * Occurs when the behavior is detached from an object.
      *
-     * @param node the node
+     * @param associatedObject the associated object
      */
-    protected void onDetached(T node) {}
+    protected void onDetached(T associatedObject) {}
 
     @Override
-    final void attach(T node) {
-        onAttached(node);
+    final void attach(T associatedObject) {
+        onAttached(associatedObject);
     }
 
     @Override
-    final void detach(T node) {
-        onDetached(node);
+    final void detach(T associatedObject) {
+        onDetached(associatedObject);
     }
 
 }

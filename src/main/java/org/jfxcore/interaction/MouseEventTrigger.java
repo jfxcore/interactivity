@@ -24,8 +24,8 @@ package org.jfxcore.interaction;
 import javafx.beans.NamedArg;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.event.EventTarget;
 import javafx.event.EventType;
-import javafx.scene.Node;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 
@@ -49,10 +49,8 @@ import javafx.scene.input.MouseEvent;
  * </ul>
  * If a value other than {@code null} is specified for any of these filter properties,
  * {@code MouseEventTrigger} will only handle events that match the specified value.
- *
- * @param <T> the node type
  */
-public class MouseEventTrigger<T extends Node> extends InputEventTrigger<T, MouseEvent> {
+public class MouseEventTrigger extends InputEventTrigger<MouseEvent> {
 
     /**
      * Initializes a new {@code MouseEventTrigger} instance.
@@ -82,7 +80,7 @@ public class MouseEventTrigger<T extends Node> extends InputEventTrigger<T, Mous
      */
     @SafeVarargs
     public MouseEventTrigger(@NamedArg("eventType") EventType<MouseEvent> eventType,
-                             @NamedArg("actions") TriggerAction<? super T>... actions) {
+                             @NamedArg("actions") TriggerAction<? super EventTarget, ? super MouseEvent>... actions) {
         super(eventType, false, actions);
     }
 
@@ -96,7 +94,7 @@ public class MouseEventTrigger<T extends Node> extends InputEventTrigger<T, Mous
     @SafeVarargs
     public MouseEventTrigger(@NamedArg("eventType") EventType<MouseEvent> eventType,
                              @NamedArg("eventFilter") boolean eventFilter,
-                             @NamedArg("actions") TriggerAction<? super T>... actions) {
+                             @NamedArg("actions") TriggerAction<? super EventTarget, ? super MouseEvent>... actions) {
         super(eventType, eventFilter, actions);
     }
 

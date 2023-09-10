@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import javafx.event.Event;
 import javafx.event.EventTarget;
 import javafx.event.EventType;
-import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
@@ -43,7 +42,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class KeyEventTriggerTest {
 
     static TestCountingCommand command;
-    static KeyEventTrigger<Node> trigger;
+    static KeyEventTrigger trigger;
     static Pane pane;
 
     @BeforeAll
@@ -55,7 +54,7 @@ public class KeyEventTriggerTest {
     @BeforeEach
     void beforeEach() {
         command.count = 0;
-        trigger = new KeyEventTrigger<>(KeyEvent.KEY_PRESSED);
+        trigger = new KeyEventTrigger(KeyEvent.KEY_PRESSED);
         trigger.getActions().add(new InvokeCommandAction(command));
         Interaction.getTriggers(pane).add(trigger);
     }
@@ -67,7 +66,7 @@ public class KeyEventTriggerTest {
 
     @Test
     public void testCharacter() {
-        var trigger = new KeyEventTrigger<>(KeyEvent.KEY_TYPED);
+        var trigger = new KeyEventTrigger(KeyEvent.KEY_TYPED);
         trigger.getActions().add(new InvokeCommandAction(command));
         trigger.setCharacter("A");
         Interaction.getTriggers(pane).add(trigger);

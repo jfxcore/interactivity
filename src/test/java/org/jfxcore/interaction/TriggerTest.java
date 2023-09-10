@@ -42,6 +42,16 @@ public class TriggerTest {
     }
 
     @Test
+    public void testAddAndRemoveTriggerNonNode() {
+        var owner = new Object();
+        var trigger = new Trigger<>() {};
+        Interaction.getTriggers(owner).add(trigger);
+        assertEquals(List.of(trigger), Interaction.getTriggers(owner));
+        Interaction.getTriggers(owner).remove(trigger);
+        assertEquals(List.of(), Interaction.getTriggers(owner));
+    }
+
+    @Test
     public void testCannotAddTriggerMultipleTimes() {
         var pane = new Pane();
         var trigger = new Trigger<>() {};
@@ -65,9 +75,9 @@ public class TriggerTest {
     @Test
     public void testTriggerThrowingInOnAttachMethodIsCorrectlyAdded() {
         var pane = new Pane();
-        var trigger = new Trigger<>() {
+        var trigger = new Trigger<Node, Object>() {
             @Override
-            protected void onAttached(Node node) {
+            protected void onAttached(Node associatedObject) {
                 throw new RuntimeException("foo");
             }
         };
@@ -83,15 +93,15 @@ public class TriggerTest {
     @Test
     public void testTriggerThrowingInOnAttachMethodIsCorrectlySet() {
         var pane = new Pane();
-        var trigger1 = new Trigger<>() {
+        var trigger1 = new Trigger<Node, Object>() {
             @Override
-            protected void onDetached(Node node) {
+            protected void onDetached(Node associatedObject) {
                 throw new RuntimeException("trigger1");
             }
         };
-        var trigger2 = new Trigger<>() {
+        var trigger2 = new Trigger<Node, Object>() {
             @Override
-            protected void onAttached(Node node) {
+            protected void onAttached(Node associatedObject) {
                 throw new RuntimeException("trigger2");
             }
         };
@@ -113,9 +123,9 @@ public class TriggerTest {
     @Test
     public void testTriggerThrowingInOnDetachMethodIsCorrectlyRemoved() {
         var pane = new Pane();
-        var trigger = new Trigger<>() {
+        var trigger = new Trigger<Node, Object>() {
             @Override
-            protected void onDetached(Node node) {
+            protected void onDetached(Node associatedObject) {
                 throw new RuntimeException("foo");
             }
         };

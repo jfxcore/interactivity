@@ -24,7 +24,6 @@ package org.jfxcore.command.mocks;
 import org.jfxcore.command.AsyncCommand;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.scene.Node;
 import java.util.List;
 
 public class TestCommand extends AsyncCommand {
@@ -60,7 +59,7 @@ public class TestCommand extends AsyncCommand {
     }
 
     @Override
-    protected void onAttached(Node node) {
+    protected void onAttached(Object target) {
         if (trace != null) {
             trace.add("+" + name);
         }
@@ -71,7 +70,7 @@ public class TestCommand extends AsyncCommand {
     }
 
     @Override
-    protected void onDetached(Node node) {
+    protected void onDetached(Object target) {
         if (trace != null) {
             trace.add("-" + name);
         }

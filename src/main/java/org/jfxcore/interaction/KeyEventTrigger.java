@@ -24,17 +24,15 @@ package org.jfxcore.interaction;
 import javafx.beans.NamedArg;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.event.EventTarget;
 import javafx.event.EventType;
-import javafx.scene.Node;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
 /**
  * Triggers actions when a {@link KeyEvent} occurs.
- *
- * @param <T> the node type
  */
-public class KeyEventTrigger<T extends Node> extends InputEventTrigger<T, KeyEvent> {
+public class KeyEventTrigger extends InputEventTrigger<KeyEvent> {
 
     /**
      * Initializes a new {@code KeyEventTrigger} instance.
@@ -64,7 +62,7 @@ public class KeyEventTrigger<T extends Node> extends InputEventTrigger<T, KeyEve
      */
     @SafeVarargs
     public KeyEventTrigger(@NamedArg("eventType") EventType<KeyEvent> eventType,
-                           @NamedArg("actions") TriggerAction<? super T>... actions) {
+                           @NamedArg("actions") TriggerAction<? super EventTarget, ? super KeyEvent>... actions) {
         super(eventType, false, actions);
     }
 
@@ -78,7 +76,7 @@ public class KeyEventTrigger<T extends Node> extends InputEventTrigger<T, KeyEve
     @SafeVarargs
     public KeyEventTrigger(@NamedArg("eventType") EventType<KeyEvent> eventType,
                            @NamedArg("eventFilter") boolean eventFilter,
-                           @NamedArg("actions") TriggerAction<? super T>... actions) {
+                           @NamedArg("actions") TriggerAction<? super EventTarget, ? super KeyEvent>... actions) {
         super(eventType, eventFilter, actions);
     }
 

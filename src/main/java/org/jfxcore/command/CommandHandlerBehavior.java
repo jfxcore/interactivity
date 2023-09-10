@@ -22,12 +22,10 @@
 package org.jfxcore.command;
 
 import org.jfxcore.interaction.Behavior;
-import org.jfxcore.interaction.Trigger;
-import javafx.scene.Node;
 
 /**
  * {@code CommandHandlerBehavior} provides an extension mechanism that defines a piece of behavior or configuration
- * logic that is executed when a {@link Command} is attached to, or detached from, a {@link Node}.
+ * logic that is executed when a {@link Command} is attached to, or detached from, an object.
  * <p>
  * In this example, a {@code CommandHandlerBehavior} is used to automatically set a {@code Button}'s text to
  * the name of its attached command:
@@ -35,15 +33,15 @@ import javafx.scene.Node;
  *     // Define a behavior to apply the command title to Button controls.
  *     public class MyCommandHandler extends CommandHandlerBehavior<Button> {
  *         @Override
- *         public void onAttached(Button button, Command command) {
- *             if (command instanceof ServiceCommand<?> c) {
- *                 button.textProperty().bind(c.titleProperty());
+ *         public void onAttached(Command command) {
+ *             if (command instanceof ServiceCommand c) {
+ *                 getAssociatedObject().textProperty().bind(c.titleProperty());
  *             }
  *         }
  *
  *         @Override
- *         public void onDetached(Button button, Command command) {
- *             button.textProperty().unbind();
+ *         public void onDetached(Command command) {
+ *             getAssociatedObject().textProperty().unbind();
  *         }
  *     }
  *
@@ -59,12 +57,12 @@ import javafx.scene.Node;
  * Note that the {@link Command} class defines overridable {@link Command#onAttached onAttached} and
  * {@link Command#onDetached onDetached} methods, which can also be used to implement custom behavior.
  * The difference between those methods and {@code CommandHandlerBehavior} is in scope:
- * logic in a {@code Command} subclass generally applies to all nodes that use the command,
- * while {@code CommandHandlerBehavior} only applies to specific nodes on which the handler is set.
+ * logic in a {@code Command} subclass generally applies to all objects that use the command, while
+ * {@code CommandHandlerBehavior} only applies to specific objects on which the handler is set.
  *
- * @param <T> the node type
+ * @param <T> the target of this behavior
  */
-public abstract class CommandHandlerBehavior<T extends Node> extends Behavior<T> {
+public abstract class CommandHandlerBehavior<T> extends Behavior<T> {
 
     /**
      * Initializes a new {@code CommandHandlerBehavior} instance.
@@ -72,9 +70,9 @@ public abstract class CommandHandlerBehavior<T extends Node> extends Behavior<T>
     protected CommandHandlerBehavior() {}
 
     /**
-     * Occurs when the command is attached to a {@link Node}.
+     * Occurs when the command is attached to an object.
      * <p>
-     * If the command is added to multiple {@link InvokeCommandAction} instances on a single {@code Node},
+     * If the command is added to multiple {@link InvokeCommandAction} instances on a single object,
      * this method is only invoked once.
      *
      * @param command the command
@@ -82,9 +80,9 @@ public abstract class CommandHandlerBehavior<T extends Node> extends Behavior<T>
     protected abstract void onAttached(Command command);
 
     /**
-     * Occurs when the command is detached from a {@link Node}.
+     * Occurs when the command is detached from an object.
      * <p>
-     * If the command was added to multiple {@link InvokeCommandAction} instances on a single {@code Node},
+     * If the command was added to multiple {@link InvokeCommandAction} instances on a single object,
      * this method is only invoked after it is removed from all {@code InvokeCommandAction} instances.
      *
      * @param command the command
@@ -92,13 +90,13 @@ public abstract class CommandHandlerBehavior<T extends Node> extends Behavior<T>
     protected abstract void onDetached(Command command);
 
     @Override
-    protected final void onAttached(T node) {
-        CommandHandlerBehaviorList.get(node).add(this);
+    protected final void onAttached(T associatedObject) {
+        CommandHandlerBehaviorList.get(associatedObject).add(this);
     }
 
     @Override
-    protected final void onDetached(T node) {
-        CommandHandlerBehaviorList.get(node).remove(this);
+    protected final void onDetached(T associatedObject) {
+        CommandHandlerBehaviorList.get(associatedObject).remove(this);
     }
 
 }

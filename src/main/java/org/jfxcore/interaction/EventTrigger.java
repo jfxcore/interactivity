@@ -24,21 +24,20 @@ package org.jfxcore.interaction;
 import javafx.beans.NamedArg;
 import javafx.event.Event;
 import javafx.event.EventHandler;
+import javafx.event.EventTarget;
 import javafx.event.EventType;
-import javafx.scene.Node;
 import java.util.Objects;
 
 /**
  * A trigger that reacts to the occurrence of an {@link Event}.
  *
- * @param <T> the node type
- * @param <E> the event type
+ * @param <E> the event type provided to this trigger's actions
  * @see ActionEventTrigger
  * @see KeyEventTrigger
  * @see MouseEventTrigger
  * @see TouchEventTrigger
  */
-public class EventTrigger<T extends Node, E extends Event> extends Trigger<T> {
+public class EventTrigger<E extends Event> extends Trigger<EventTarget, E> {
 
     private final EventType<E> eventType;
     private final boolean eventFilter;
@@ -80,7 +79,7 @@ public class EventTrigger<T extends Node, E extends Event> extends Trigger<T> {
      */
     @SafeVarargs
     public EventTrigger(@NamedArg("eventType") EventType<E> eventType,
-                        @NamedArg("actions") TriggerAction<? super T>... actions) {
+                        @NamedArg("actions") TriggerAction<? super EventTarget, ? super E>... actions) {
         super(actions);
         this.eventType = Objects.requireNonNull(eventType, "eventType cannot be null");
         this.eventFilter = false;
@@ -96,7 +95,7 @@ public class EventTrigger<T extends Node, E extends Event> extends Trigger<T> {
     @SafeVarargs
     public EventTrigger(@NamedArg("eventType") EventType<E> eventType,
                         @NamedArg("eventFilter") boolean eventFilter,
-                        @NamedArg("actions") TriggerAction<? super T>... actions) {
+                        @NamedArg("actions") TriggerAction<? super EventTarget, ? super E>... actions) {
         super(actions);
         this.eventType = Objects.requireNonNull(eventType, "eventType cannot be null");
         this.eventFilter = eventFilter;
@@ -116,25 +115,25 @@ public class EventTrigger<T extends Node, E extends Event> extends Trigger<T> {
     }
 
     @Override
-    protected final void onAttached(T node) {
+    protected final void onAttached(EventTarget associatedObject) {
         if (eventFilter) {
-            node.addEventFilter(eventType, handler);
+            associatedObject.addEventFilter(eventType, handler);
         } else {
-            node.addEventHandler(eventType, handler);
+            associatedObject.addEventHandler(eventType, handler);
         }
     }
 
     @Override
-    protected final void onDetached(T node) {
+    protected final void onDetached(EventTarget associatedObject) {
         if (eventFilter) {
-            node.removeEventFilter(eventType, handler);
+            associatedObject.removeEventFilter(eventType, handler);
         } else {
-            node.removeEventHandler(eventType, handler);
+            associatedObject.removeEventHandler(eventType, handler);
         }
     }
 
     private void runActions(E event) {
-        for (TriggerAction<? super T> action : getActions()) {
+        for (TriggerAction<? super EventTarget, ? super E> action : getActions()) {
             try {
                 action.onExecute(event);
             } catch (Throwable ex) {

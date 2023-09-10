@@ -24,8 +24,8 @@ package org.jfxcore.interaction;
 import javafx.beans.NamedArg;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.event.EventTarget;
 import javafx.event.EventType;
-import javafx.scene.Node;
 import javafx.scene.input.TouchEvent;
 
 /**
@@ -42,10 +42,8 @@ import javafx.scene.input.TouchEvent;
  * </ul>
  * If a value other than {@code null} is specified for any of these filter properties,
  * {@code TouchEventTrigger} will only handle events that match the specified value.
- *
- * @param <T> the node type
  */
-public class TouchEventTrigger<T extends Node> extends InputEventTrigger<T, TouchEvent> {
+public class TouchEventTrigger extends InputEventTrigger<TouchEvent> {
 
     /**
      * Initializes a new {@code TouchEventTrigger} instance.
@@ -75,7 +73,7 @@ public class TouchEventTrigger<T extends Node> extends InputEventTrigger<T, Touc
      */
     @SafeVarargs
     public TouchEventTrigger(@NamedArg("eventType") EventType<TouchEvent> eventType,
-                             @NamedArg("actions") TriggerAction<? super T>... actions) {
+                             @NamedArg("actions") TriggerAction<? super EventTarget, ? super TouchEvent>... actions) {
         super(eventType, false, actions);
     }
 
@@ -89,7 +87,7 @@ public class TouchEventTrigger<T extends Node> extends InputEventTrigger<T, Touc
     @SafeVarargs
     public TouchEventTrigger(@NamedArg("eventType") EventType<TouchEvent> eventType,
                              @NamedArg("eventFilter") boolean eventFilter,
-                             @NamedArg("actions") TriggerAction<? super T>... actions) {
+                             @NamedArg("actions") TriggerAction<? super EventTarget, ? super TouchEvent>... actions) {
         super(eventType, eventFilter, actions);
     }
 

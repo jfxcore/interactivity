@@ -26,7 +26,9 @@ import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.WeakHashMap;
 
 /**
  * Contains the static {@link #getBehaviors Interaction.behaviors} and
@@ -34,60 +36,82 @@ import java.util.Objects;
  */
 public final class Interaction {
 
-    private Interaction() {}
+    /**
+     * Stores behavior lists for non-{@code Node} owners.
+     */
+    private static final Map<Object, ObservableList<?>> behaviorLists = new WeakHashMap<>();
 
     /**
-     * Gets the {@link Behavior behaviors} that are defined on the specified {@code node}.
+     * Gets the {@link Behavior behaviors} of the specified {@code owner}.
      *
-     * @param node the node
+     * @param owner the owner of the behaviors
      * @return a modifiable list of behaviors
-     * @param <T> the node type
+     * @param <T> the owner type
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Node> ObservableList<Behavior<? super T>> getBehaviors(T node) {
-        BehaviorList<T, Behavior<? super T>> list =
-            (BehaviorList<T, Behavior<? super T>>)Objects.requireNonNull(node, "node cannot be null")
-            .getProperties()
-            .get(BehaviorList.class);
+    public static <T> ObservableList<Behavior<? super T>> getBehaviors(T owner) {
+        Objects.requireNonNull(owner, "owner cannot be null");
 
-        if (list == null) {
-            list = new BehaviorList<>(node);
-            node.getProperties().put(BehaviorList.class, list);
+        if (owner instanceof Node node) {
+            BehaviorList<T, Behavior<? super T>> list =
+                (BehaviorList<T, Behavior<? super T>>)node.getProperties().get(BehaviorList.class);
+
+            if (list == null) {
+                list = new BehaviorList<>((T)node);
+                node.getProperties().put(BehaviorList.class, list);
+            }
+
+            return list;
         }
 
-        return list;
+        synchronized (behaviorLists) {
+            return (ObservableList<Behavior<? super T>>) behaviorLists
+                    .computeIfAbsent(owner, key -> new BehaviorList<>(owner));
+        }
     }
 
     /**
-     * Gets the {@link Trigger triggers} that are defined on the specified {@code node}.
+     * Stores trigger lists for non-{@code Node} owners.
+     */
+    private static final Map<Object, ObservableList<?>> triggerLists = new WeakHashMap<>();
+
+    /**
+     * Gets the {@link Trigger triggers} of the specified {@code owner}.
      *
-     * @param node the node
+     * @param owner the owner of the triggers
      * @return a modifiable list of triggers
-     * @param <T> the node type
+     * @param <T> the owner type
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Node> ObservableList<Trigger<? super T>> getTriggers(T node) {
-        TriggerList<T, Trigger<? super T>> list =
-            (TriggerList<T, Trigger<? super T>>)Objects.requireNonNull(node, "node cannot be null")
-                .getProperties()
-                .get(TriggerList.class);
+    public static <T> ObservableList<Trigger<? super T, ?>> getTriggers(T owner) {
+        Objects.requireNonNull(owner, "owner cannot be null");
 
-        if (list == null) {
-            list = new TriggerList<>(node);
-            node.getProperties().put(TriggerList.class, list);
+        if (owner instanceof Node node) {
+            TriggerList<T, Trigger<? super T, ?>> list =
+                (TriggerList<T, Trigger<? super T, ?>>)node.getProperties().get(TriggerList.class);
+
+            if (list == null) {
+                list = new TriggerList<>((T)node);
+                node.getProperties().put(TriggerList.class, list);
+            }
+
+            return list;
         }
 
-        return list;
+        synchronized (triggerLists) {
+            return (ObservableList<Trigger<? super T, ?>>) triggerLists
+                    .computeIfAbsent(owner, key -> new TriggerList<>(owner));
+        }
     }
 
-    private static abstract class AttachableList<T extends Node, U extends Attachable<? super T>>
+    private static abstract class AttachableList<T, U extends Attachable<? super T>>
             extends ModifiableObservableListBase<U> {
         final List<U> backingList;
-        final T node;
+        final T owner;
 
-        AttachableList(T node) {
+        AttachableList(T owner) {
             this.backingList = new ArrayList<>(2);
-            this.node = node;
+            this.owner = owner;
         }
 
         @Override
@@ -104,10 +128,10 @@ public final class Interaction {
         protected void doAdd(int index, U element) {
             checkPreconditions(element);
             backingList.add(index, element);
-            element.associatedNode = node;
+            element.associatedObject = owner;
 
             try {
-                element.attach(node);
+                element.attach(owner);
             } catch (Throwable ex) {
                 Thread currentThread = Thread.currentThread();
                 currentThread.getUncaughtExceptionHandler().uncaughtException(currentThread, ex);
@@ -121,16 +145,16 @@ public final class Interaction {
             Throwable exception = null;
 
             try {
-                oldElement.detach(node);
+                oldElement.detach(owner);
             } catch (Throwable ex) {
                 exception = ex;
             }
 
-            oldElement.associatedNode = null;
-            element.associatedNode = node;
+            oldElement.associatedObject = null;
+            element.associatedObject = owner;
 
             try {
-                element.attach(node);
+                element.attach(owner);
             } catch (Throwable ex) {
                 if (exception != null) {
                     ex.addSuppressed(exception);
@@ -152,12 +176,12 @@ public final class Interaction {
             U oldElement = backingList.remove(index);
 
             try {
-                oldElement.detach(node);
+                oldElement.detach(owner);
             } catch (Throwable ex) {
                 Thread currentThread = Thread.currentThread();
                 currentThread.getUncaughtExceptionHandler().uncaughtException(currentThread, ex);
             } finally {
-                oldElement.associatedNode = null;
+                oldElement.associatedObject = null;
             }
 
             return oldElement;
@@ -167,22 +191,25 @@ public final class Interaction {
 
         private void checkPreconditions(U element) {
             if (element == null) {
-                throw new NullPointerException(elementName() + " cannot be null.");
+                throw new NullPointerException(
+                    elementName() + " cannot be null.");
             }
 
-            if (element.associatedNode == node) {
-                throw new IllegalStateException(elementName() + " cannot be attached to the same node more than once.");
+            if (element.associatedObject == owner) {
+                throw new IllegalStateException(
+                    elementName() + " cannot be attached to the same object more than once.");
             }
 
-            if (element.associatedNode != null) {
-                throw new IllegalStateException(elementName() + " cannot be attached to multiple nodes.");
+            if (element.associatedObject != null) {
+                throw new IllegalStateException(
+                    elementName() + " cannot be attached to multiple objects.");
             }
         }
     }
 
-    private static class BehaviorList<T extends Node, U extends Behavior<? super T>> extends AttachableList<T, U> {
-        BehaviorList(T node) {
-            super(node);
+    private static class BehaviorList<T, U extends Behavior<? super T>> extends AttachableList<T, U> {
+        BehaviorList(T owner) {
+            super(owner);
         }
 
         @Override
@@ -196,9 +223,9 @@ public final class Interaction {
         }
     }
 
-    private static class TriggerList<T extends Node, U extends Trigger<? super T>> extends AttachableList<T, U> {
-        TriggerList(T node) {
-            super(node);
+    private static class TriggerList<T, U extends Trigger<? super T, ?>> extends AttachableList<T, U> {
+        TriggerList(T owner) {
+            super(owner);
         }
 
         @Override

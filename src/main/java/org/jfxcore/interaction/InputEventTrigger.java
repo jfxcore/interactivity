@@ -23,18 +23,17 @@ package org.jfxcore.interaction;
 
 import javafx.beans.NamedArg;
 import javafx.beans.property.ObjectProperty;
+import javafx.event.EventTarget;
 import javafx.event.EventType;
-import javafx.scene.Node;
 import javafx.scene.input.InputEvent;
 import java.util.Objects;
 
 /**
  * A triggers that react to the occurrence of an {@link InputEvent}.
  *
- * @param <T> the node type
  * @param <E> the event type
  */
-public class InputEventTrigger<T extends Node, E extends InputEvent> extends EventTrigger<T, E> {
+public class InputEventTrigger<E extends InputEvent> extends EventTrigger<E> {
 
     /**
      * Initializes a new {@code InputEventTrigger} instance.
@@ -64,7 +63,7 @@ public class InputEventTrigger<T extends Node, E extends InputEvent> extends Eve
      */
     @SafeVarargs
     public InputEventTrigger(@NamedArg("eventType") EventType<E> eventType,
-                             @NamedArg("actions") TriggerAction<? super T>... actions) {
+                             @NamedArg("actions") TriggerAction<? super EventTarget, ? super E>... actions) {
         super(eventType, actions);
     }
 
@@ -78,7 +77,7 @@ public class InputEventTrigger<T extends Node, E extends InputEvent> extends Eve
     @SafeVarargs
     public InputEventTrigger(@NamedArg("eventType") EventType<E> eventType,
                              @NamedArg("eventFilter") boolean eventFilter,
-                             @NamedArg("actions") TriggerAction<? super T>... actions) {
+                             @NamedArg("actions") TriggerAction<? super EventTarget, ? super E>... actions) {
         super(eventType, eventFilter, actions);
     }
 
