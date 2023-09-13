@@ -195,6 +195,22 @@ public abstract non-sealed class Trigger<T, P> extends Attachable<T> {
     }
 
     /**
+     * Runs all actions of this trigger with the specified {@code parameter}.
+     *
+     * @param parameter the parameter supplied to the actions
+     */
+    protected void runActions(P parameter) {
+        for (TriggerAction<? super T, ? super P> action : getActions()) {
+            try {
+                action.onExecute(parameter);
+            } catch (Throwable ex) {
+                Thread currentThread = Thread.currentThread();
+                currentThread.getUncaughtExceptionHandler().uncaughtException(currentThread, ex);
+            }
+        }
+    }
+
+    /**
      * Occurs when the trigger is attached to an object.
      *
      * @param associatedObject the associated object
