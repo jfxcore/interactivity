@@ -132,15 +132,4 @@ public class EventTrigger<E extends Event> extends Trigger<EventTarget, E> {
         }
     }
 
-    private void runActions(E event) {
-        for (TriggerAction<? super EventTarget, ? super E> action : getActions()) {
-            try {
-                action.onExecute(event);
-            } catch (Throwable ex) {
-                Thread currentThread = Thread.currentThread();
-                currentThread.getUncaughtExceptionHandler().uncaughtException(currentThread, ex);
-            }
-        }
-    }
-
 }
