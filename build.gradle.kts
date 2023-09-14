@@ -60,9 +60,9 @@ publishing {
             artifact(tasks["sourcesJar"])
             artifact(tasks["javadocJar"])
             pom {
-                url.set("https://github.com/jfxcore/interactivity")
+                url.set("https://github.com/jfxcore/interaction")
                 name.set("interactivity")
-                description.set("Reusable interactivity tools for JavaFX")
+                description.set("This package has been superseded by org.jfxcore:interaction")
                 licenses {
                     license {
                         name.set("GPL-2.0-only WITH Classpath-exception-2.0")
@@ -78,9 +78,16 @@ publishing {
                     }
                 }
                 scm {
-                    connection.set("scm:git:https://github.com/jfxcore/interactivity.git")
-                    developerConnection.set("scm:git:https://github.com/jfxcore/interactivity.git")
-                    url.set("https://github.com/jfxcore/interactivity")
+                    connection.set("scm:git:https://github.com/jfxcore/interaction.git")
+                    developerConnection.set("scm:git:https://github.com/jfxcore/interaction.git")
+                    url.set("https://github.com/jfxcore/interaction")
+                }
+                distributionManagement {
+                    relocation {
+                        groupId.set("org.jfxcore")
+                        artifactId.set("interaction")
+                        version.set("0.2.0")
+                    }
                 }
             }
         }
