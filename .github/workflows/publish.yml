@@ -26,15 +26,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17.0.1'
-
-      - name: Get tag name
-        id: tagName
-        uses: little-core-labs/get-git-tag@v3.0.1
-        if: ${{ env.SNAPSHOT_BUILD == 'false' }}
 
       - name: Choose repository
         id: remoteRepository
@@ -63,8 +58,8 @@ jobs:
         run: ./gradlew publish -x test -x check -PREPOSITORY_URL=${URL} -PREPOSITORY_USERNAME=${USERNAME} -PREPOSITORY_PASSWORD=${PASSWORD}
         if: ${{ env.SNAPSHOT_BUILD == 'true' }}
         env:
-          VERSION: ${{ steps.tagName.outputs.tag }}
           URL: ${{ steps.remoteRepository.outputs.location }}
+          VERSION: ${{ github.ref_name }}
           USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
 
@@ -72,7 +67,7 @@ jobs:
         run: ./gradlew publish -x test -x check -PREPOSITORY_URL=${URL} -PREPOSITORY_USERNAME=${USERNAME} -PREPOSITORY_PASSWORD=${PASSWORD} -PTAG_VERSION_PROJECT=${VERSION}
         if: ${{ env.SNAPSHOT_BUILD == 'false' }}
         env:
-          VERSION: ${{ steps.tagName.outputs.tag }}
           URL: ${{ steps.remoteRepository.outputs.location }}
+          VERSION: ${{ github.ref_name }}
           USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
