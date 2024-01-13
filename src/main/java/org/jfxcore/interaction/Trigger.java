@@ -184,7 +184,7 @@ public abstract non-sealed class Trigger<T, P> extends Attachable<T> {
 
             if (action.associatedTrigger == trigger) {
                 throw new IllegalStateException(
-                    TriggerAction.class.getSimpleName() + "  cannot be added to the same trigger more than once.");
+                    TriggerAction.class.getSimpleName() + " cannot be added to the same trigger more than once.");
             }
 
             if (action.associatedTrigger != null) {
