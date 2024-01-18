@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, JFXcore. All rights reserved.
+ * Copyright (c) 2023, 2024, JFXcore. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -68,6 +68,10 @@ public class InvokeCommandActionTest {
         action.setCommand(command1);
         assertFalse(action.disabledProperty().get());
         action.setCommand(command2);
+        assertTrue(action.disabledProperty().get());
+        action.setCommand(command1);
+        assertFalse(action.disabledProperty().get());
+        action.setCommand(null);
         assertTrue(action.disabledProperty().get());
     }
 

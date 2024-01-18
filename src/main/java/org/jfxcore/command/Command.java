@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, JFXcore. All rights reserved.
+ * Copyright (c) 2023, 2024, JFXcore. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,7 +21,14 @@
 
 package org.jfxcore.command;
 
+import org.jfxcore.interaction.ActionEventTrigger;
+import org.jfxcore.interaction.Interaction;
+import org.jfxcore.interaction.Trigger;
+import org.jfxcore.interaction.TriggerAction;
+import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
+import javafx.event.EventTarget;
+import javafx.event.ActionEvent;
 
 /**
  * Represents an operation that can be invoked in various ways, such as by clicking a button,
@@ -31,6 +38,62 @@ import javafx.beans.property.ReadOnlyBooleanProperty;
  * @see ServiceCommand
  */
 public abstract class Command {
+
+    /**
+     * The command that is invoked when the owner receives an {@link ActionEvent}.
+     * <p>
+     * Setting this property is a shortcut for adding an {@link ActionEventTrigger} with an
+     * {@link InvokeCommandAction} to the owner, like in the following example:
+     * <pre>{@code
+     *     var command = new MyCommand();
+     *     var invokeCommandAction = new InvokeCommandAction(command);
+     *     var actionEventTrigger = new ActionEventTrigger(invokeCommandAction);
+     *
+     *     var button = new Button();
+     *     Interaction.getTriggers(button).add(actionEventTrigger);
+     * }</pre>
+     *
+     * @param owner the owner of the attached property
+     * @return the command property
+     */
+    public static ObjectProperty<Command> onActionProperty(EventTarget owner) {
+        class InvokeCommandActionImpl extends InvokeCommandAction {}
+        var triggers = Interaction.getTriggers(owner);
+
+        for (Trigger<?, ?> trigger : triggers) {
+            if (trigger instanceof ActionEventTrigger actionEventTrigger) {
+                for (TriggerAction<?, ?> action : actionEventTrigger.getActions()) {
+                    if (action instanceof InvokeCommandActionImpl invokeCommandAction) {
+                        return invokeCommandAction.commandProperty();
+                    }
+                }
+            }
+        }
+
+        var invokeCommandAction = new InvokeCommandActionImpl();
+        triggers.add(new ActionEventTrigger(invokeCommandAction));
+        return invokeCommandAction.commandProperty();
+    }
+
+    /**
+     * Gets the value of the {@link #onActionProperty(EventTarget) onAction} property.
+     *
+     * @param owner the owner of the attached property
+     * @return the command
+     */
+    public static Command getOnAction(EventTarget owner) {
+        return onActionProperty(owner).get();
+    }
+
+    /**
+     * Sets the value of the {@link #onActionProperty(EventTarget) onAction} property.
+     *
+     * @param owner the owner of the attached property
+     * @param command the command
+     */
+    public static void setOnAction(EventTarget owner, Command command) {
+        onActionProperty(owner).set(command);
+    }
 
     /**
      * Initializes a new {@code Command} instance.
