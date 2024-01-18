@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, JFXcore. All rights reserved.
+ * Copyright (c) 2023, 2024, JFXcore. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -115,6 +115,19 @@ public class CommandTest {
         Interaction.getTriggers(pane).remove(trigger2);
         assertEquals(0, InvokeCommandActionList.get(pane).size());
         assertEquals(List.of("+A", "-A", "+A", "-A"), trace);
+    }
+
+    @Test
+    public void testOnActionAttachedProperty() {
+        var pane = new Pane();
+        assertNull(Command.getOnAction(pane));
+
+        var command = new TestCommand(null, "A", false);
+        Command.setOnAction(pane, command);
+        assertSame(command, Command.getOnAction(pane));
+
+        // repeatedly getting the command must return the same instance
+        assertSame(command, Command.getOnAction(pane));
     }
 
 }
