@@ -2,7 +2,7 @@ plugins {
     `java-library`
     `maven-publish`
     signing
-    id("org.openjfx.javafxplugin") version "0.0.14"
+    id("org.openjfx.javafxplugin") version "0.1.0"
 }
 
 group = "org.jfxcore"
@@ -29,24 +29,14 @@ dependencies {
     api("org.openjfx:javafx-base:${project.ext["javafx.version"]}")
     api("org.openjfx:javafx-graphics:${project.ext["javafx.version"]}")
 
-    testImplementation("org.testfx:testfx-core:4.0.16-alpha")
-    testImplementation("org.testfx:testfx-junit5:4.0.16-alpha")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
-}
-
-tasks.getByName<JavaCompile>("compileTestJava") {
-    options.compilerArgs = listOf(
-        "--add-modules=org.testfx.junit5",
-        "--add-reads=jfxcore.interactivity=org.testfx.junit5")
+    testImplementation("org.testfx:testfx-core:4.0.17")
+    testImplementation("org.testfx:testfx-junit5:4.0.17")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.9.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.9.2")
 }
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
-    jvmArgs = listOf(
-        "--add-reads=jfxcore.interactivity=org.testfx",
-        "--add-opens=jfxcore.interactivity/org.jfxcore.command=org.testfx.junit5",
-        "--add-opens=javafx.graphics/com.sun.javafx.application=org.testfx")
 }
 
 tasks.withType<GenerateModuleMetadata> {
