@@ -35,7 +35,8 @@ import java.util.List;
  * received.
  * <p>
  * A trigger is attached to a JavaFX entity by adding it to its triggers list, which can be
- * retrieved with the {@link Interaction#getTriggers} method.
+ * retrieved with the {@link Interaction#getTriggers} method. A trigger can only be attached
+ * to a single object at any time, but it can be re-used after being detached.
  * <p>
  * Implementations can override the {@link #onAttached} and {@link #onDetached} methods to run
  * custom code, install listeners, or configure the associated entity.
@@ -211,7 +212,12 @@ public abstract non-sealed class Trigger<T, P> extends Attachable<T> {
     }
 
     /**
-     * Occurs when the trigger is attached to an object.
+     * Occurs when the trigger is attached to an object by adding it to the object's
+     * {@link Interaction#getTriggers} list.
+     * <p>
+     * The trigger can only be attached to a single object at any time; any attempt to attach the trigger
+     * to another object will fail with an {@link IllegalStateException}.
+     * When the trigger is removed from the object's trigger list, {@link #onDetached} will be invoked.
      *
      * @param associatedObject the associated object
      */
