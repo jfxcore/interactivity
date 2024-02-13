@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, JFXcore. All rights reserved.
+ * Copyright (c) 2023, 2024, JFXcore. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -28,7 +28,8 @@ import javafx.scene.Node;
  * JavaFX entities.
  * <p>
  * A behavior is attached to a JavaFX entity by adding it to its behaviors list, which can be
- * retrieved with the {@link Interaction#getBehaviors} method.
+ * retrieved with the {@link Interaction#getBehaviors} method. A behavior can only be attached
+ * to a single object at any time, but it can be re-used after being detached.
  * <p>
  * Implementations can override the {@link #onAttached} and {@link #onDetached} methods to run
  * custom code, install listeners, or configure the associated entity.
@@ -53,7 +54,12 @@ public abstract non-sealed class Behavior<T> extends Attachable<T> {
     }
 
     /**
-     * Occurs when the behavior is attached to an object.
+     * Occurs when the behavior is attached to an object by adding it to the object's
+     * {@link Interaction#getBehaviors} list.
+     * <p>
+     * The behavior can only be attached to a single object at any time; any attempt to attach the behavior
+     * to another object will fail with an {@link IllegalStateException}.
+     * When the behavior is removed from the object's behavior list, {@link #onDetached} will be invoked.
      *
      * @param associatedObject the associated object
      */
