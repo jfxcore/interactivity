@@ -53,7 +53,7 @@ public abstract non-sealed class Trigger<T, P> extends Attachable<T> {
      * Initializes a new {@code Trigger} instance.
      */
     protected Trigger() {
-        this.actions = new ActionList<>(this, new ArrayList<>(2));
+        this.actions = new ActionList<>(this, 2);
     }
 
     /**
@@ -63,7 +63,8 @@ public abstract non-sealed class Trigger<T, P> extends Attachable<T> {
      */
     @SafeVarargs
     protected Trigger(TriggerAction<? super T, ? super P>... actions) {
-        this.actions = new ActionList<>(this, List.of(actions));
+        this.actions = new ActionList<>(this, actions.length);
+        this.actions.addAll(actions);
     }
 
     /**
@@ -89,9 +90,9 @@ public abstract non-sealed class Trigger<T, P> extends Attachable<T> {
         final List<TriggerAction<? super T, ? super P>> backingList;
         final Trigger<T, P> trigger;
 
-        ActionList(Trigger<T, P> trigger, List<TriggerAction<? super T, ? super P>> backingList) {
+        ActionList(Trigger<T, P> trigger, int initialCapacity) {
             this.trigger = trigger;
-            this.backingList = backingList;
+            this.backingList = new ArrayList<>(initialCapacity);
         }
 
         @Override
