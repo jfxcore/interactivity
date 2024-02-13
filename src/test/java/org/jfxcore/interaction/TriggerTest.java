@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, JFXcore. All rights reserved.
+ * Copyright (c) 2023, 2024, JFXcore. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -70,6 +70,20 @@ public class TriggerTest {
         assertThrows(RuntimeException.class, () -> Interaction.getTriggers(pane2).add(trigger));
         Interaction.getTriggers(pane1).remove(trigger);
         assertDoesNotThrow(() -> Interaction.getTriggers(pane2).add(trigger));
+    }
+
+    @Test
+    public void testAddActionInConstructorAndRemoveLater() {
+        var action = new TriggerAction<>() {
+            @Override protected void onExecute(Object parameter) {}
+        };
+
+        var trigger = new Trigger<>(action) {};
+        assertEquals(1, trigger.getActions().size());
+        assertSame(action, trigger.getActions().get(0));
+
+        trigger.getActions().remove(0);
+        assertEquals(0, trigger.getActions().size());
     }
 
     @Test
