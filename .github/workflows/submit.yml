@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: gradle/wrapper-validation-action@v1
+      - uses: gradle/wrapper-validation-action@v2
 
   # Run on Windows instead of Ubuntu, since TestFX fails with an error similar to
   # https://github.com/TestFX/TestFX/issues/731 but the proposed solution doesn't work.
