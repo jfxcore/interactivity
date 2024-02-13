@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, JFXcore. All rights reserved.
+ * Copyright (c) 2023, 2024, JFXcore. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -39,12 +39,12 @@ public abstract class TriggerAction<T, P> {
     protected TriggerAction() {}
 
     /**
-     * Gets the object that is associated with this {@code TriggerAction}.
+     * Gets the trigger that is associated with this {@code TriggerAction}.
      *
-     * @return the associated object, or {@code null} if this action is not associated with an object
+     * @return the associated trigger, or {@code null} if this action is not associated with a trigger
      */
-    public final T getAssociatedObject() {
-        return associatedTrigger != null ? associatedTrigger.getAssociatedObject() : null;
+    public final Trigger<? extends T, ?> getAssociatedTrigger() {
+        return associatedTrigger;
     }
 
     /**
