@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, JFXcore. All rights reserved.
+ * Copyright (c) 2023, 2024, JFXcore. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -30,6 +30,19 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TriggerActionTest {
+
+    @Test
+    public void testAddTriggerActionsInConstructor() {
+        class TriggerActionImpl extends TriggerAction<Object, Object> {
+            @Override protected void onExecute(Object parameter) {}
+        }
+
+        var trigger = new Trigger<>(new TriggerActionImpl(), new TriggerActionImpl()) {};
+
+        assertEquals(2, trigger.getActions().size());
+        assertSame(trigger, trigger.getActions().get(0).getAssociatedTrigger());
+        assertSame(trigger, trigger.getActions().get(1).getAssociatedTrigger());
+    }
 
     @Test
     public void testAddAndRemoveTriggerAction() {
