@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, JFXcore. All rights reserved.
+ * Copyright (c) 2023, 2024, JFXcore. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -46,18 +46,16 @@ import javafx.event.Event;
 public class InvokeCommandAction extends TriggerAction<Object, Object> {
 
     private class DisabledValue extends ReadOnlyBooleanPropertyBase implements InvalidationListener {
+        boolean disabledWhenNotExecutable = true;
         boolean disabledWhenExecuting = true;
         boolean executing;
         boolean executable;
 
         void set(boolean executable, boolean executing) {
-            boolean changed = this.executable != executable || this.executing != executing;
+            boolean oldValue = get();
             this.executable = executable;
             this.executing = executing;
-
-            if (changed) {
-                fireValueChangedEvent();
-            }
+            fireValueChangedEvent(oldValue);
         }
 
         @Override
@@ -67,12 +65,12 @@ public class InvokeCommandAction extends TriggerAction<Object, Object> {
 
         @Override
         public String getName() {
-            return null;
+            return "disabled";
         }
 
         @Override
         public boolean get() {
-            return !executable || (disabledWhenExecuting && executing);
+            return disabledWhenNotExecutable && (!executable || (disabledWhenExecuting && executing));
         }
 
         @Override
@@ -82,28 +80,30 @@ public class InvokeCommandAction extends TriggerAction<Object, Object> {
 
         @Override
         public void invalidated(Observable observable) {
+            boolean current = get();
             boolean value = ((ObservableBooleanValue)observable).get();
 
             if (observable == InvokeCommandAction.this.disabledWhenExecuting) {
-                if (disabledWhenExecuting != value) {
-                    disabledWhenExecuting = value;
-                    fireValueChangedEvent();
-                }
+                disabledWhenExecuting = value;
+            } else if (observable == InvokeCommandAction.this.disabledWhenNotExecutable) {
+                disabledWhenNotExecutable = value;
             } else {
                 Command command = getCommand();
                 if (command != null) {
                     if (observable == command.executableProperty()) {
-                        if (executable != value) {
-                            executable = value;
-                            fireValueChangedEvent();
-                        }
+                        executable = value;
                     } else if (command instanceof AsyncCommand c && observable == c.executingProperty()) {
-                        if (executing != value) {
-                            executing = value;
-                            fireValueChangedEvent();
-                        }
+                        executing = value;
                     }
                 }
+            }
+
+            fireValueChangedEvent(current);
+        }
+
+        private void fireValueChangedEvent(boolean oldValue) {
+            if (oldValue != get()) {
+                fireValueChangedEvent();
             }
         }
     }
@@ -256,6 +256,38 @@ public class InvokeCommandAction extends TriggerAction<Object, Object> {
     public final void setDisabledWhenExecuting(boolean value) {
         if (disabledWhenExecuting != null || !value) {
             disabledWhenExecutingProperty().set(value);
+        }
+    }
+
+    /**
+     * Indicates whether the object to which this {@code InvokeCommandAction} applies will be
+     * disabled when the command is not executable. If this property is set to {@code false}, the
+     * command will not be executed if it is not executable at the time the action is triggered.
+     *
+     * @defaultValue true
+     */
+    private BooleanProperty disabledWhenNotExecutable;
+
+    public final BooleanProperty disabledWhenNotExecutableProperty() {
+        if (disabledWhenNotExecutable == null) {
+            disabledWhenNotExecutable = new SimpleBooleanProperty(this, "disabledWhenNotExecutable", true) {
+                @Override
+                protected void invalidated() {
+                    disabled.invalidated(this);
+                }
+            };
+        }
+
+        return disabledWhenNotExecutable;
+    }
+
+    public final boolean isDisabledWhenNotExecutable() {
+        return disabledWhenNotExecutable == null || disabledWhenNotExecutable.get();
+    }
+
+    public final void setDisabledWhenNotExecutable(boolean value) {
+        if (disabledWhenNotExecutable != null || !value) {
+            disabledWhenNotExecutableProperty().set(value);
         }
     }
 
