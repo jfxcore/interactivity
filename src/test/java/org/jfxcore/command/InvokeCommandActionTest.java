@@ -59,6 +59,35 @@ public class InvokeCommandActionTest {
     }
 
     @Test
+    public void testActionIsDisabledWhenCommandIsNotExecutable() {
+        var action = new InvokeCommandAction();
+        var command = new TestCommand(null, null, false);
+        command.executableProperty().set(false);
+        command.executingProperty().set(false);
+        action.setCommand(command);
+        assertTrue(action.disabledProperty().get());
+        action.setDisabledWhenNotExecutable(false);
+        assertFalse(action.disabledProperty().get());
+    }
+
+    @Test
+    public void testCommandIsNotExecutedWhenActionIsTriggeredWhenCommandIsNotExecutable() {
+        var action = new InvokeCommandAction();
+        var command = new TestCommand(null, null, false) {
+            @Override
+            public void onExecute(Object parameter) {
+                fail();
+            }
+        };
+
+        command.executableProperty().set(false);
+        command.executingProperty().set(false);
+        action.setCommand(command);
+        action.setDisabledWhenNotExecutable(false);
+        action.onExecute(null);
+    }
+
+    @Test
     public void testActionIsUpdatedWhenCommandIsChanged() {
         var action = new InvokeCommandAction();
         var command1 = new TestCommand(null, null ,false);
