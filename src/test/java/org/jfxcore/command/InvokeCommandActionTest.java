@@ -56,6 +56,10 @@ public class InvokeCommandActionTest {
         assertTrue(action.disabledProperty().get());
         action.setDisabledWhenExecuting(false);
         assertFalse(action.disabledProperty().get());
+        action.setDisabledWhenNotExecutable(false);
+        assertFalse(action.disabledProperty().get());
+        action.setDisabledWhenExecuting(true);
+        assertTrue(action.disabledProperty().get());
     }
 
     @Test
@@ -68,6 +72,19 @@ public class InvokeCommandActionTest {
         assertTrue(action.disabledProperty().get());
         action.setDisabledWhenNotExecutable(false);
         assertFalse(action.disabledProperty().get());
+    }
+
+    @Test
+    public void testActionIsEnabledWhenDisabledWhenNotExecutableIsFalse() {
+        var action = new InvokeCommandAction();
+        var command = new TestCommand(null, null, false);
+        command.executableProperty().set(true);
+        action.setCommand(command);
+        action.setDisabledWhenNotExecutable(false);
+        action.setDisabledWhenExecuting(true);
+        assertFalse(action.disabledProperty().get());
+        command.executingProperty().set(true);
+        assertTrue(action.disabledProperty().get());
     }
 
     @Test

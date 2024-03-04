@@ -70,7 +70,7 @@ public class InvokeCommandAction extends TriggerAction<Object, Object> {
 
         @Override
         public boolean get() {
-            return disabledWhenNotExecutable && (!executable || (disabledWhenExecuting && executing));
+            return !executable && disabledWhenNotExecutable || executing && disabledWhenExecuting;
         }
 
         @Override
@@ -230,7 +230,9 @@ public class InvokeCommandAction extends TriggerAction<Object, Object> {
 
     /**
      * Indicates whether the object to which this {@code InvokeCommandAction} applies will be
-     * disabled for the duration of the command execution.
+     * disabled for the duration of the command execution. If this property is set to {@code false},
+     * the associated object can invoke an {@code AsyncCommand} while it is currently running, which
+     * causes {@link AsyncCommand#cancel()} to be called instead.
      *
      * @defaultValue true
      */
