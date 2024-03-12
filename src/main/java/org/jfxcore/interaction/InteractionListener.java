@@ -32,7 +32,7 @@ public interface InteractionListener<P, R> {
 
     /**
      * Accepts an interaction request and returns whether the listener will respond to the request.
-     * <p>
+     *
      * @implSpec Listener implementations can respond to the interaction request immediately, or they
      *           can choose to respond to the interaction request at a later point in time.
      *           If an implementation responds to the request or intends to respond to the request later,

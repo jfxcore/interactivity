@@ -98,6 +98,11 @@ public final class Interaction<P, R> {
     private int lockCount;
 
     /**
+     * Creates a new {@code Interaction} instance.
+     */
+    public Interaction() {}
+
+    /**
      * Requests an interaction with the specified payload.
      *
      * @param payload the request payload
@@ -180,11 +185,22 @@ public final class Interaction<P, R> {
         }
     }
 
+    /**
+     * Subscribes a listener to this interaction.
+     *
+     * @param listener the {@code InteractionListener}
+     * @return the {@code Subscription} that can be used to unsubscribe the listener
+     */
     public Subscription subscribe(InteractionListener<P, R> listener) {
         addListener(listener);
         return () -> removeListener(listener);
     }
 
+    /**
+     * Adds a listener to this interaction.
+     *
+     * @param listener the {@code InteractionListener}
+     */
     public void addListener(InteractionListener<P, R> listener) {
         Objects.requireNonNull(listener, "listener cannot be null");
 
@@ -203,6 +219,12 @@ public final class Interaction<P, R> {
         }
     }
 
+    /**
+     * Removes a listener from this interaction.
+     * If the specified listener was not added to this interaction, calling this method has no effect.
+     *
+     * @param listener the {@code InteractionListener}
+     */
     public void removeListener(InteractionListener<P, R> listener) {
         Objects.requireNonNull(listener, "listener cannot be null");
 
