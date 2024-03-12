@@ -84,8 +84,8 @@ import java.util.concurrent.CancellationException;
  * }
  * }</pre>
  * <p>
- * This class also contains the static {@link #getBehaviors Interaction.behaviors} and
- * {@link #getTriggers Interaction.triggers} properties.
+ * Interaction listeners will be invoked in reverse order, starting with the most recently added listener.
+ * Once a listener accepts the request, subsequent listeners will not be invoked.
  *
  * @param <P> the payload type
  * @param <R> the response type
