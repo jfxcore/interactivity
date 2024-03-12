@@ -88,7 +88,7 @@ import java.util.concurrent.CancellationException;
  * {@link #getTriggers Interaction.triggers} properties.
  *
  * @param <P> the payload type
- * @param <R> the request type
+ * @param <R> the response type
  */
 public final class Interaction<P, R> {
 
