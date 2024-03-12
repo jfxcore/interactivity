@@ -43,13 +43,13 @@ public class InteractionRequestTest {
         @Test
         void testRequest() {
             var interaction = new Interaction<Integer, String>();
-            assertThrows(InteractionException.class, () -> interaction.request(123));
+            assertThrows(UnhandledInteractionException.class, () -> interaction.request(123));
         }
 
         @Test
         void testRequestAndWait() {
             var interaction = new Interaction<Integer, String>();
-            assertThrows(InteractionException.class, () -> interaction.requestAndWait(123));
+            assertThrows(UnhandledInteractionException.class, () -> interaction.requestAndWait(123));
         }
     }
 
@@ -59,14 +59,14 @@ public class InteractionRequestTest {
         void testRequest() {
             var interaction = new Interaction<Integer, String>();
             interaction.addListener(request -> false);
-            assertThrows(InteractionException.class, () -> interaction.request(123));
+            assertThrows(UnhandledInteractionException.class, () -> interaction.request(123));
         }
 
         @Test
         void testRequestAndWait() {
             var interaction = new Interaction<Integer, String>();
             interaction.addListener(request -> false);
-            assertThrows(InteractionException.class, () -> interaction.requestAndWait(123));
+            assertThrows(UnhandledInteractionException.class, () -> interaction.requestAndWait(123));
         }
     }
 
