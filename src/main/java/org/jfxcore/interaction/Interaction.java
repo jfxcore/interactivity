@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, JFXcore. All rights reserved.
+ * Copyright (c) 2023, 2024, JFXcore. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -21,22 +21,217 @@
 
 package org.jfxcore.interaction;
 
+import javafx.application.Platform;
 import javafx.collections.ModifiableObservableListBase;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
+import javafx.util.Subscription;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.WeakHashMap;
+import java.util.concurrent.CancellationException;
 
 /**
- * Contains the static {@link #getBehaviors Interaction.behaviors} and
+ * {@code Interaction} provides a way for software components to initiate an interaction with other
+ * software components, which may involve presenting a dialog window or control to the user.
+ * <p>
+ * An interaction is requested by calling {@link #request} or {@link #requestAndWait}, after which an
+ * {@link InteractionListener} can accept the request and complete it by returning a response or an
+ * exception. In most cases, the interaction will be initiated in a controller or view model component,
+ * while the response will be handled in a view component.
+ * <p>
+ * For example, a view model component may want to confirm the deletion of a file with the user:
+ * <pre>{@code
+ * import java.nio.file.Files;
+ * import java.nio.file.Path;
+ * import javafx.scene.control.ButtonType;
+ * import javafx.scene.control.Dialog;
+ * import javafx.scene.layout.StackPane;
+ *
+ * public class ViewModel {
+ *     public final Interaction<Path, Boolean> confirmDelete = new Interaction<>();
+ *
+ *     // This method might be called when the user clicks on a 'delete' button.
+ *     // An application can use the Command class to model user-initiated commands.
+ *     public void deleteFile(Path file) {
+ *         if (confirmDelete.requestAndWait(file)) {
+ *             Files.delete(file);
+ *         }
+ *     }
+ * }
+ *
+ * public class View extends StackPane {
+ *     private final ViewModel vm = new ViewModel();
+ *
+ *     public View() {
+ *         vm.confirmDelete.addListener(request -> {
+ *             var dialog = new Dialog<>();
+ *             dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+ *             dialog.setContentText("Do you want to delete the following file: " + request.getPayload());
+ *
+ *             // Show the dialog and get the result
+ *             var response = dialog.showAndWait().orElse(ButtonType.CANCEL);
+ *
+ *             // Complete the request
+ *             request.complete(response == ButtonType.OK);
+ *
+ *             // We need to return true, since we already completed the request
+ *             return true;
+ *         });
+ *     }
+ * }
+ * }</pre>
+ * <p>
+ * This class also contains the static {@link #getBehaviors Interaction.behaviors} and
  * {@link #getTriggers Interaction.triggers} properties.
+ *
+ * @param <P> the payload type
+ * @param <R> the request type
  */
-public final class Interaction {
+public final class Interaction<P, R> {
 
-    private Interaction() {}
+    private final List<InteractionListener<P, R>> listeners = new ArrayList<>(2);
+    private List<InteractionListener<P, R>> toBeAdded;
+    private List<InteractionListener<P, R>> toBeRemoved;
+    private int lockCount;
+
+    /**
+     * Requests an interaction with the specified payload.
+     *
+     * @param payload the request payload
+     * @throws UnhandledInteractionException if no listener accepted the request
+     * @return the {@code InteractionRequest}
+     */
+    public InteractionRequest<P, R> request(P payload) {
+        var request = new InteractionRequestBase.Default<>(this, payload);
+        handleRequest(request);
+        return request;
+    }
+
+    /**
+     * Requests an interaction with the specified payload, and waits for the response.
+     * <p>
+     * If this method is called on the JavaFX application thread, a nested event loop may be
+     * started if the interaction is not immediately completed. This allows the application
+     * to remain responsive while waiting for the interaction to be completed or cancelled.
+     * <p>
+     * If this method is called on any other thread, the current thread will be blocked until
+     * the interaction is completed or cancelled.
+     *
+     * @param payload the request payload
+     * @throws UnhandledInteractionException if no listener accepted the request
+     * @throws InteractionException if the request is completed with an exception
+     * @throws CancellationException if the request was cancelled
+     * @return the response
+     */
+    public R requestAndWait(P payload) {
+        InteractionRequestBase<P, R> request = Platform.isFxApplicationThread() ?
+            new InteractionRequestBase.AwaitableEventLoop<>(this, payload) :
+            new InteractionRequestBase.AwaitableMonitor<>(this, payload);
+
+        handleRequest(request);
+        request.await();
+
+        if (request.isCancelled()) {
+            throw new CancellationException();
+        } else if (request.getException() != null) {
+            throw new InteractionException(
+                "The interaction request was completed with an exception.",
+                request.getException(),
+                request);
+        }
+
+        return request.getResponse();
+    }
+
+    private void handleRequest(InteractionRequestBase<P, R> request) {
+        synchronized (listeners) {
+            try {
+                lockCount++;
+
+                for (int i = listeners.size() - 1; i >= 0; --i) {
+                    if (listeners.get(i).accept(request) || request.isDone()) {
+                        return;
+                    }
+                }
+
+                throw new UnhandledInteractionException("No listener accepted the interaction request.", request);
+            } finally {
+                lockCount--;
+
+                if (toBeRemoved != null) {
+                    for (var listener : toBeRemoved) {
+                        removeListenerFromList(listeners, listener);
+                    }
+
+                    toBeRemoved = null;
+                }
+
+                if (toBeAdded != null) {
+                    for (var listener : toBeAdded) {
+                        removeListenerFromList(listeners, listener);
+                    }
+
+                    toBeAdded = null;
+                }
+            }
+        }
+    }
+
+    public Subscription subscribe(InteractionListener<P, R> listener) {
+        addListener(listener);
+        return () -> removeListener(listener);
+    }
+
+    public void addListener(InteractionListener<P, R> listener) {
+        Objects.requireNonNull(listener, "listener cannot be null");
+
+        synchronized (listeners) {
+            if (lockCount > 0) {
+                if (toBeRemoved == null || !removeListenerFromList(toBeRemoved, listener)) {
+                    if (toBeAdded == null) {
+                        toBeAdded = new ArrayList<>(2);
+                    }
+
+                    toBeAdded.add(listener);
+                }
+            } else {
+                listeners.add(listener);
+            }
+        }
+    }
+
+    public void removeListener(InteractionListener<P, R> listener) {
+        Objects.requireNonNull(listener, "listener cannot be null");
+
+        synchronized (listeners) {
+            if (lockCount > 0) {
+                if (toBeAdded == null || !removeListenerFromList(toBeAdded, listener)) {
+                    if (toBeRemoved == null) {
+                        toBeRemoved = new ArrayList<>(2);
+                    }
+
+                    toBeRemoved.add(listener);
+                }
+            } else {
+                removeListenerFromList(listeners, listener);
+            }
+        }
+    }
+
+    private boolean removeListenerFromList(List<InteractionListener<P, R>> list,
+                                           InteractionListener<P, R> listener) {
+        for (int i = list.size() - 1; i >= 0; --i) {
+            if (listener.equals(list.get(i))) {
+                list.remove(i);
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * Stores behavior lists for non-{@code Node} owners.
