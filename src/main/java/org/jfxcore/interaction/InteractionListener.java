@@ -26,6 +26,7 @@ package org.jfxcore.interaction;
  *
  * @param <P> the payload type
  * @param <R> the response type
+ * @see WeakInteractionListener
  */
 @FunctionalInterface
 public interface InteractionListener<P, R> {
