@@ -21,18 +21,16 @@
 
 package org.jfxcore.interaction;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.testfx.api.FxRobot;
 import org.testfx.framework.junit5.ApplicationExtension;
-
 import java.util.*;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
+import java.util.concurrent.*;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -93,7 +91,7 @@ public class InteractionRequestTest {
         @Test
         void testRequest_secondListenerResponds() {
             var response = new TestConsumer<String>();
-            interaction.request(123).whenCompleted(response);
+            interaction.request(123).whenComplete(response);
             assertEquals("second-123", response.value);
         }
 
@@ -105,19 +103,19 @@ public class InteractionRequestTest {
             });
 
             var response = new TestConsumer<String>();
-            interaction.request(123).whenCompleted(response);
+            interaction.request(123).whenComplete(response);
             assertEquals("new-123", response.value);
 
             subscription.unsubscribe();
-            interaction.request(123).whenCompleted(response);
+            interaction.request(123).whenComplete(response);
             assertEquals("second-123", response.value);
         }
 
         @Test
         void testRequest_asyncListenerResponds() {
-            var response = new AwaitableTestConsumer<String>();
+            var response = new AwaitableBase.TestConsumer<String>();
             var subscription = interaction.subscribe(asyncListener);
-            interaction.request(123).whenCompleted(response);
+            interaction.request(123).whenComplete(response);
             assertEquals("async-123", response.awaitValue());
             subscription.unsubscribe();
         }
@@ -168,7 +166,7 @@ public class InteractionRequestTest {
         @Test
         void testRequest_nextListenerResponds() {
             var response = new TestConsumer<String>();
-            interaction.request(123).whenCompleted(response);
+            interaction.request(123).whenComplete(response);
             assertEquals("first-123", response.value);
         }
 
@@ -182,11 +180,11 @@ public class InteractionRequestTest {
         void testRequest_newlyAddedListenerIsSkipped() {
             var subscription = interaction.subscribe(request -> false);
             var response = new TestConsumer<String>();
-            interaction.request(123).whenCompleted(response);
+            interaction.request(123).whenComplete(response);
             assertEquals("first-123", response.value);
 
             subscription.unsubscribe();
-            interaction.request(123).whenCompleted(response);
+            interaction.request(123).whenComplete(response);
             assertEquals("first-123", response.value);
         }
 
@@ -204,27 +202,6 @@ public class InteractionRequestTest {
 
     @Nested
     class WhenRequestIsCancelled {
-        @Test
-        void testCancellationHandlerIsInvoked() {
-            var interaction = new Interaction<Integer, String>();
-            interaction.addListener(request -> true);
-            var cancelled = new AtomicBoolean();
-            var request = interaction.request(123).whenCancelled(() -> cancelled.set(true));
-            request.cancel();
-            assertTrue(cancelled.get());
-        }
-
-        @Test
-        void testCancellationHandlerIsInvoked_whenInteractionIsAlreadyCancelled() {
-            var interaction = new Interaction<Integer, String>();
-            interaction.addListener(request -> true);
-            var cancelled = new AtomicBoolean();
-            var request = interaction.request(123);
-            request.cancel();
-            request.whenCancelled(() -> cancelled.set(true));
-            assertTrue(cancelled.get());
-        }
-
         @Test
         void testRequestAndWaitThrowsCancellationException_withImmediateCancellation() {
             var interaction = new Interaction<Integer, String>();
@@ -260,7 +237,7 @@ public class InteractionRequestTest {
             });
 
             var response = new TestConsumer<String>();
-            interaction.request(123).whenCompleted(response);
+            interaction.request(123).whenComplete(response);
             assertEquals("payload-123", response.value);
         }
 
@@ -272,8 +249,8 @@ public class InteractionRequestTest {
                 return true;
             });
 
-            var response = new AwaitableTestConsumer<String>();
-            interaction.request(123).whenCompleted(response);
+            var response = new AwaitableBase.TestConsumer<String>();
+            interaction.request(123).whenComplete(response);
             assertEquals("payload-123", response.awaitValue());
         }
 
@@ -332,8 +309,8 @@ public class InteractionRequestTest {
                 return true;
             });
 
-            var response = new TestConsumer<Throwable>();
-            interaction.request(123).whenCompletedExceptionally(response);
+            var response = new AwaitableBase.TestFunction<Throwable, String>();
+            interaction.request(123).exceptionally(response);
             assertInstanceOf(RuntimeException.class, response.value);
             assertEquals("exception-123", response.value.getMessage());
         }
@@ -347,8 +324,8 @@ public class InteractionRequestTest {
                 return true;
             });
 
-            var response = new AwaitableTestConsumer<Throwable>();
-            interaction.request(123).whenCompletedExceptionally(response);
+            var response = new AwaitableBase.TestFunction<Throwable, String>();
+            interaction.request(123).exceptionally(response);
             response.awaitValue();
             assertInstanceOf(RuntimeException.class, response.value);
             assertEquals("exception-123", response.value.getMessage());
@@ -403,6 +380,401 @@ public class InteractionRequestTest {
         }
     }
 
+    @Nested
+    class ThenApply {
+        @Test
+        void testComplete() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.complete("value-" + request.getPayload());
+                return true;
+            });
+
+            var result = interaction.request(123)
+                .thenApply(value -> value + "-456")
+                .toCompletableFuture()
+                .get();
+
+            assertEquals("value-123-456", result);
+        }
+
+        @Test
+        void testCompleteExceptionally() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.completeExceptionally(new RuntimeException("exception-" + request.getPayload()));
+                return true;
+            });
+
+            try {
+                interaction.request(123)
+                    .thenApply(value -> value + "-456")
+                    .toCompletableFuture()
+                    .get();
+            } catch (ExecutionException ex) {
+                assertEquals("exception-123", ex.getCause().getMessage());
+            }
+        }
+    }
+
+    @Nested
+    class ThenAccept {
+        @Test
+        void testComplete() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.complete("value-" + request.getPayload());
+                return true;
+            });
+
+            var action = new String[1];
+            var request = interaction.request(123);
+            var next = request.thenAccept(value -> action[0] = value);
+            var nextValue = next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+
+            assertTrue(request.isCompleted());
+            assertNull(nextValue);
+            assertEquals("value-123", action[0]);
+        }
+
+        @Test
+        void testCompleteExceptionally() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.completeExceptionally(new RuntimeException("exception-" + request.getPayload()));
+                return true;
+            });
+
+            var request = interaction.request(123);
+            var next = request.thenAccept(value -> fail());
+
+            try {
+                next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException ex) {
+                assertEquals("exception-123", ex.getCause().getMessage());
+            }
+        }
+    }
+
+    @Nested
+    class ThenRun {
+        @Test
+        void testComplete() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.complete("value-" + request.getPayload());
+                return true;
+            });
+
+            var flag = new Boolean[1];
+            var request = interaction.request(123);
+            var next = request.thenRun(() -> flag[0] = true);
+            var nextValue = next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+
+            assertTrue(request.isCompleted());
+            assertNull(nextValue);
+            assertTrue(flag[0]);
+        }
+
+        @Test
+        void testCompleteExceptionally() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.completeExceptionally(new RuntimeException("exception-" + request.getPayload()));
+                return true;
+            });
+
+            var request = interaction.request(123);
+            var next = request.thenRun(Assertions::fail);
+
+            try {
+                next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException ex) {
+                assertEquals("exception-123", ex.getCause().getMessage());
+            }
+        }
+    }
+
+    @Nested
+    class ThenCombine {
+        @Test
+        void testComplete() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.complete("value-" + request.getPayload());
+                return true;
+            });
+
+            var action = new String[1];
+            var request = interaction.request(123);
+            var other = CompletableFuture.completedFuture("456");
+            var next = request.thenCombine(other, (v1, v2) -> action[0] = v1 + v2);
+            var nextValue = next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+
+            assertTrue(request.isCompleted());
+            assertEquals("value-123456", nextValue);
+            assertEquals("value-123456", action[0]);
+        }
+
+        @Test
+        void testCompleteExceptionally() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.completeExceptionally(new RuntimeException("exception-" + request.getPayload()));
+                return true;
+            });
+
+            var request = interaction.request(123);
+            var other = CompletableFuture.completedFuture("456");
+            var next = request.thenCombine(other, (v1, v2) -> fail());
+
+            try {
+                next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException ex) {
+                assertEquals("exception-123", ex.getCause().getMessage());
+            }
+        }
+    }
+
+    @Nested
+    class ThenAcceptBoth {
+        @Test
+        void testComplete() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.complete("value-" + request.getPayload());
+                return true;
+            });
+
+            var action = new String[1];
+            var request = interaction.request(123);
+            var other = CompletableFuture.completedFuture("456");
+            var next = request.thenAcceptBoth(other, (v1, v2) -> action[0] = v1 + v2);
+            var nextValue = next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+
+            assertTrue(request.isCompleted());
+            assertNull(nextValue);
+            assertEquals("value-123456", action[0]);
+        }
+
+        @Test
+        void testCompleteExceptionally() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.completeExceptionally(new RuntimeException("exception-" + request.getPayload()));
+                return true;
+            });
+
+            var request = interaction.request(123);
+            var other = CompletableFuture.completedFuture("456");
+            var next = request.thenAcceptBoth(other, (v1, v2) -> fail());
+
+            try {
+                next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException ex) {
+                assertEquals("exception-123", ex.getCause().getMessage());
+            }
+        }
+    }
+
+    @Nested
+    class RunAfterBoth {
+        @Test
+        void testComplete() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.complete("value-" + request.getPayload());
+                return true;
+            });
+
+            var flag = new boolean[1];
+            var request = interaction.request(123);
+            var other = CompletableFuture.completedFuture("456");
+            var next = request.runAfterBoth(other, () -> flag[0] = true);
+            var nextValue = next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+
+            assertTrue(request.isCompleted());
+            assertNull(nextValue);
+            assertTrue(flag[0]);
+        }
+
+        @Test
+        void testCompleteExceptionally() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.completeExceptionally(new RuntimeException("exception-" + request.getPayload()));
+                return true;
+            });
+
+            var request = interaction.request(123);
+            var other = CompletableFuture.completedFuture("456");
+            var next = request.runAfterBoth(other, Assertions::fail);
+
+            try {
+                next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException ex) {
+                assertEquals("exception-123", ex.getCause().getMessage());
+            }
+        }
+    }
+
+    @Nested
+    class ApplyToEither {
+        @Test
+        void testComplete() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.complete("value-" + request.getPayload());
+                return true;
+            });
+
+            var action = new String[1];
+            var request = interaction.request(123);
+            var other = CompletableFuture.completedFuture("456");
+            var next = request.applyToEither(other, value -> action[0] = value);
+            var nextValue = next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+
+            assertTrue(request.isCompleted());
+            assertEquals("value-123", nextValue);
+            assertEquals("value-123", action[0]);
+        }
+
+        @Test
+        void testCompleteExceptionally() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.completeExceptionally(new RuntimeException("exception-" + request.getPayload()));
+                return true;
+            });
+
+            var request = interaction.request(123);
+            var other = CompletableFuture.completedFuture("456");
+            var next = request.applyToEither(other, Integer::parseInt);
+            var nextValue = next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+
+            assertEquals(456, nextValue);
+        }
+    }
+
+    @Nested
+    class AcceptEither {
+        @Test
+        void testComplete() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.complete("value-" + request.getPayload());
+                return true;
+            });
+
+            var action = new String[1];
+            var request = interaction.request(123);
+            var other = CompletableFuture.completedFuture("456");
+            var next = request.acceptEither(other, value -> action[0] = value);
+            var nextValue = next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+
+            assertTrue(request.isCompleted());
+            assertNull(nextValue);
+            assertEquals("value-123", action[0]);
+        }
+
+        @Test
+        void testCompleteExceptionally() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.completeExceptionally(new RuntimeException("exception-" + request.getPayload()));
+                return true;
+            });
+
+            var action = new String[1];
+            var request = interaction.request(123);
+            var other = CompletableFuture.completedFuture("456");
+            var next = request.acceptEither(other, value -> action[0] = value);
+            var nextValue = next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+
+            assertTrue(request.isCompletedExceptionally());
+            assertNull(nextValue);
+            assertEquals("456", action[0]);
+        }
+    }
+
+    @Nested
+    class RunAfterEither {
+        @Test
+        void testComplete() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.complete("value-" + request.getPayload());
+                return true;
+            });
+
+            var flag = new boolean[1];
+            var request = interaction.request(123);
+            var other = CompletableFuture.completedFuture("456");
+            var next = request.runAfterEither(other, () -> flag[0] = true);
+            var nextValue = next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+
+            assertTrue(request.isCompleted());
+            assertNull(nextValue);
+            assertTrue(flag[0]);
+        }
+
+        @Test
+        void testCompleteExceptionally() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.completeExceptionally(new RuntimeException("exception-" + request.getPayload()));
+                return true;
+            });
+
+            var flag = new boolean[1];
+            var request = interaction.request(123);
+            var other = CompletableFuture.completedFuture("456");
+            var next = request.runAfterEither(other, () -> flag[0] = true);
+            var nextValue = next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+
+            assertTrue(request.isCompletedExceptionally());
+            assertNull(nextValue);
+            assertTrue(flag[0]);
+        }
+    }
+
+    @Nested
+    class ThenCompose {
+        @Test
+        void testComplete() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.complete("value-" + request.getPayload());
+                return true;
+            });
+
+            var request = interaction.request(123);
+            var next = request.thenCompose(value -> CompletableFuture.completedFuture(value + "456"));
+            var nextValue = next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+
+            assertTrue(request.isCompleted());
+            assertEquals("value-123456", nextValue);
+        }
+
+        @Test
+        void testCompleteExceptionally() throws Exception {
+            var interaction = new Interaction<Integer, String>();
+            interaction.addListener(request -> {
+                request.completeExceptionally(new RuntimeException("exception-" + request.getPayload()));
+                return true;
+            });
+
+            var request = interaction.request(123);
+            var next = request.thenCompose(value -> CompletableFuture.completedFuture(value + "456"));
+
+            try {
+                next.toCompletableFuture().get(1000, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException ex) {
+                assertEquals("exception-123", ex.getCause().getMessage());
+            }
+        }
+    }
+
     interface RunnableEx {
         void run() throws Throwable;
     }
@@ -420,24 +792,18 @@ public class InteractionRequestTest {
         }, 100);
     }
 
-    static class TestConsumer<T> implements Consumer<T> {
+    static class TestConsumer<T> implements BiConsumer<T, Throwable> {
         T value;
 
         @Override
-        public void accept(T t) {
+        public void accept(T t, Throwable ex) {
             value = t;
         }
     }
 
-    static class AwaitableTestConsumer<T> implements Consumer<T> {
+    static class AwaitableBase<T> {
         T value;
         CountDownLatch countDownLatch = new CountDownLatch(1);
-
-        @Override
-        public void accept(T t) {
-            value = t;
-            countDownLatch.countDown();
-        }
 
         void await() {
             try {
@@ -450,6 +816,23 @@ public class InteractionRequestTest {
         T awaitValue() {
             await();
             return value;
+        }
+
+        static class TestConsumer<T> extends AwaitableBase<T> implements BiConsumer<T, Throwable> {
+            @Override
+            public void accept(T t, Throwable throwable) {
+                value = t;
+                countDownLatch.countDown();
+            }
+        }
+
+        static class TestFunction<T, U> extends AwaitableBase<T> implements Function<T, U> {
+            @Override
+            public U apply(T t) {
+                value = t;
+                countDownLatch.countDown();
+                return null;
+            }
         }
     }
 }

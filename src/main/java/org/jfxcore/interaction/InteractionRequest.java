@@ -21,7 +21,7 @@
 
 package org.jfxcore.interaction;
 
-import java.util.function.Consumer;
+import java.util.concurrent.CompletionStage;
 
 /**
  * Provides information about an interaction request, as well as methods to complete or
@@ -32,7 +32,7 @@ import java.util.function.Consumer;
  * @see Interaction#request
  * @see Interaction#requestAndWait
  */
-public sealed interface InteractionRequest<P, R> permits InteractionRequestBase {
+public sealed interface InteractionRequest<P, R> extends CompletionStage<R> permits InteractionRequestBase {
 
     /**
      * Gets the associated interaction.
@@ -99,49 +99,4 @@ public sealed interface InteractionRequest<P, R> permits InteractionRequestBase 
      * @return {@code true} if this interaction request was cancelled, {@code false} otherwise
      */
     boolean isCancelled();
-
-    /**
-     * Specifies an action that is invoked when this interaction request transitions into any of the
-     * three completion states (completed, completed exceptionally, cancelled).
-     * <p>
-     * If this method is called when this interaction request is already completed or cancelled, the
-     * specified action is invoked immediately.
-     *
-     * @param action the action
-     * @return this {@code InteractionRequest}
-     */
-    InteractionRequest<P, R> whenDone(Runnable action);
-
-    /**
-     * Specifies an action that is invoked when this interaction request is cancelled.
-     * <p>
-     * If this method is called when this interaction request is already cancelled, the specified
-     * action is invoked immediately.
-     *
-     * @param action the action
-     * @return this {@code InteractionRequest}
-     */
-    InteractionRequest<P, R> whenCancelled(Runnable action);
-
-    /**
-     * Specifies an action that is invoked when this interaction request is completed with a response.
-     * <p>
-     * If this method is called when this interaction request is already completed with a response,
-     * the specified action is invoked immediately.
-     *
-     * @param action the action
-     * @return this {@code InteractionRequest}
-     */
-    InteractionRequest<P, R> whenCompleted(Consumer<R> action);
-
-    /**
-     * Specifies an action that is invoked when this interaction request is completed with an exception.
-     * <p>
-     * If this method is called when this interaction request is already completed with an exception,
-     * the specified action is invoked immediately.
-     *
-     * @param action the action
-     * @return this {@code InteractionRequest}
-     */
-    InteractionRequest<P, R> whenCompletedExceptionally(Consumer<Throwable> action);
 }
