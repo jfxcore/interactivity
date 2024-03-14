@@ -43,6 +43,12 @@ tasks.withType<GenerateModuleMetadata> {
     enabled = false
 }
 
+tasks.javadoc {
+    (options as StandardJavadocDocletOptions).apply {
+        tags("implSpec:a:Implementation Requirements:")
+    }
+}
+
 publishing {
     publications {
         create<MavenPublication>("maven") {
