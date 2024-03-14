@@ -1004,6 +1004,7 @@ abstract sealed class InteractionRequestBase<P, R>
                 try {
                     wait();
                 } catch (InterruptedException e) {
+                    Thread.interrupted(); // clear the interrupted status
                     throw new InteractionException("Interaction was interrupted", e, this);
                 }
             }
