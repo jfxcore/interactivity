@@ -28,6 +28,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledOnOs;
+import org.junit.jupiter.api.condition.OS;
 import javafx.event.Event;
 import javafx.event.EventTarget;
 import javafx.event.EventType;
@@ -123,11 +125,22 @@ public class KeyEventTriggerTest {
     }
 
     @Test
+    @EnabledOnOs({OS.WINDOWS, OS.LINUX})
     public void testShortcutDown() {
         trigger.setShortcutDown(true);
         Event.fireEvent(pane, createEvent(pane, KeyCode.A, KeyEvent.KEY_PRESSED));
         assertEquals(0, command.count);
         Event.fireEvent(pane, createEvent(pane, KeyCode.A, KeyEvent.KEY_PRESSED, KeyModifier.CTRL));
+        assertEquals(1, command.count);
+    }
+
+    @Test
+    @EnabledOnOs(OS.MAC)
+    public void testShortcutDownMac() {
+        trigger.setShortcutDown(true);
+        Event.fireEvent(pane, createEvent(pane, KeyCode.A, KeyEvent.KEY_PRESSED));
+        assertEquals(0, command.count);
+        Event.fireEvent(pane, createEvent(pane, KeyCode.A, KeyEvent.KEY_PRESSED, KeyModifier.META));
         assertEquals(1, command.count);
     }
 
