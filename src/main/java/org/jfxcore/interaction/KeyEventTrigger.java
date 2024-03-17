@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, JFXcore. All rights reserved.
+ * Copyright (c) 2023, 2024, JFXcore. All rights reserved.
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS FILE HEADER.
  *
  * This code is free software; you can redistribute it and/or modify it
@@ -188,6 +188,24 @@ public class KeyEventTrigger extends InputEventTrigger<KeyEvent> {
         metaDownProperty().set(metaDown);
     }
 
+    /**
+     * Specifies a filter for the {@link KeyEvent#isShortcutDown() shortcutDown} value.
+     */
+    private ObjectProperty<Boolean> shortcutDown;
+
+    public final ObjectProperty<Boolean> shortcutDownProperty() {
+        return shortcutDown != null ? shortcutDown :
+            (shortcutDown = new SimpleObjectProperty<>(this, "shortcutDown"));
+    }
+
+    public final Boolean isShortcutDown() {
+        return shortcutDown != null ? shortcutDown.get() : null;
+    }
+
+    public final void setShortcutDown(Boolean metaDown) {
+        shortcutDownProperty().set(metaDown);
+    }
+
     @Override
     protected boolean handleEvent(KeyEvent event) {
         return super.handleEvent(event)
@@ -196,7 +214,8 @@ public class KeyEventTrigger extends InputEventTrigger<KeyEvent> {
             && matches(shiftDown, event.isShiftDown())
             && matches(controlDown, event.isControlDown())
             && matches(altDown, event.isAltDown())
-            && matches(metaDown, event.isMetaDown());
+            && matches(metaDown, event.isMetaDown())
+            && matches(shortcutDown, event.isShortcutDown());
     }
 
 }
