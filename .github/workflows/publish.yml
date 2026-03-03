@@ -35,8 +35,8 @@ jobs:
         id: remoteRepository
         run: echo location=$([ "${{ github.ref }}" = "refs/heads/master" ] && echo "${SNAPSHOT}" || echo "${STAGING}") >> $GITHUB_OUTPUT
         env:
-          SNAPSHOT: https://oss.sonatype.org/content/repositories/snapshots
-          STAGING: https://oss.sonatype.org/service/local/staging/deploy/maven2
+          SNAPSHOT: https://central.sonatype.com/repository/maven-snapshots
+          STAGING: https://ossrh-staging-api.central.sonatype.com/service/local/staging/deploy/maven2
 
       - name: Configure GPG
         run: |
@@ -64,10 +64,11 @@ jobs:
           PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
 
       - name: Build release
-        run: ./gradlew publish -x test -x check -PREPOSITORY_URL=${URL} -PREPOSITORY_USERNAME=${USERNAME} -PREPOSITORY_PASSWORD=${PASSWORD} -PTAG_VERSION_PROJECT=${VERSION}
+        run: ./gradlew publish -x test -x check -PREPOSITORY_URL=${URL} -PREPOSITORY_POST_URL=${POST_URL} -PREPOSITORY_USERNAME=${USERNAME} -PREPOSITORY_PASSWORD=${PASSWORD} -PTAG_VERSION_PROJECT=${VERSION}
         if: ${{ env.SNAPSHOT_BUILD == 'false' }}
         env:
           URL: ${{ steps.remoteRepository.outputs.location }}
+          POST_URL: https://ossrh-staging-api.central.sonatype.com/manual/upload/defaultRepository/org.jfxcore
           VERSION: ${{ github.ref_name }}
           USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}

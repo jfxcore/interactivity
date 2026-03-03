@@ -1,3 +1,11 @@
+@file:Suppress("UnstableApiUsage")
+
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.util.Base64
+
 plugins {
     `java-library`
     `maven-publish`
@@ -46,6 +54,33 @@ tasks.withType<GenerateModuleMetadata> {
 tasks.javadoc {
     (options as StandardJavadocDocletOptions).apply {
         tags("implSpec:a:Implementation Requirements:")
+    }
+}
+
+if (!version.toString().endsWith("-SNAPSHOT")) {
+    val mavenCentralFixup by tasks.registering {
+        doLast {
+            val url = project.property("REPOSITORY_POST_URL") as String
+            val username = project.property("REPOSITORY_USERNAME") as String
+            val password = project.property("REPOSITORY_PASSWORD") as String
+            val userToken = Base64.getEncoder().encodeToString("$username:$password".toByteArray(Charsets.UTF_8))
+            val request = HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .header("Authorization", "Bearer $userToken")
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build()
+
+            logger.info("POST $url")
+
+            HttpClient.newHttpClient().use {
+                val response = it.send(request, HttpResponse.BodyHandlers.ofString())
+                logger.info("Received status code: ${response.statusCode()}")
+            }
+        }
+    }
+
+    tasks.publish {
+        finalizedBy(mavenCentralFixup)
     }
 }
 
