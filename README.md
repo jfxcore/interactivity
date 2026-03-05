@@ -1,4 +1,4 @@
-# Overview
+# JFXcore.interactivity
 Provides tools to implement the command pattern and interaction requests in JavaFX applications.
 
 # Releases
