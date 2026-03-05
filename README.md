@@ -15,5 +15,7 @@ The latest release is available on [Maven Central](https://central.sonatype.com/
 
 ## Gradle
 ```kotlin
-implementation("org.jfxcore:interactivity:0.6.0")
+dependencies {
+    implementation("org.jfxcore:interactivity:0.6.0")
+}
 ```
