@@ -1,5 +1,10 @@
 # JFXcore.interactivity
-Provides tools to implement the command pattern and interaction requests in JavaFX applications.
+
+> JFXcore.interactivity is free software, licensed under [GPL v2 with the Classpath exception](LICENSE).
+> This allows linking this library with non-GPL-licensed modules to produce an executable, and to distribute
+> that executable under a license of your choice.
+
+JFXcore.interactivity provides tools to implement the command pattern and interaction requests in JavaFX applications.
 
 # Releases
 The latest release is available on [Maven Central](https://central.sonatype.com/artifact/org.jfxcore/interactivity/0.6.0).
